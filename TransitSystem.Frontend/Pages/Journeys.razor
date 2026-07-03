@@ -1,0 +1,140 @@
+﻿@page "/journeys"
+
+<div class="tab-panel active">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Mis viajes</div>
+      <div class="ph-sub">Historial completo de trayectos y estadísticas de uso</div>
+    </div>
+    <button class="btn btn-outline">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportar
+    </button>
+  </div>
+
+  <div class="filters">
+    <div class="fc @(FilterWeek ? "on" : "off")" @onclick="() => SetFilter(1)">Esta semana</div>
+    <div class="fc @(FilterMonth ? "on" : "off")" @onclick="() => SetFilter(2)">Este mes</div>
+    <div class="fc @(FilterLastMonth ? "on" : "off")" @onclick="() => SetFilter(3)">Último mes</div>
+    <div class="fc @(FilterMetropolitano ? "on" : "off")" @onclick="ToggleMetropolitano" style="display:flex;align-items:center;gap:5px"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
+    <div class="fc @(FilterLinea1 ? "fc-l1 on" : "off")" @onclick="ToggleLinea1" style="display:flex;align-items:center;gap:5px"><div class="line-dot" style="background:var(--l1)"></div>Línea 1</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="st-box"><div class="st-val">23</div><div class="st-lbl">Viajes esta semana</div></div>
+    <div class="st-box r"><div class="st-val">S/ 38</div><div class="st-lbl">Gasto total semana</div></div>
+    <div class="st-box g"><div class="st-val">3</div><div class="st-lbl">Transbordos gratuitos</div></div>
+    <div class="st-box g"><div class="st-val">S/ 4.50</div><div class="st-lbl">Ahorro en transbordos</div></div>
+  </div>
+
+  <div class="viajes-grid">
+    <div>
+      <div class="chart-area">
+        <div class="sec-label" style="margin-bottom:12px">Viajes por día — esta semana</div>
+        <div class="chart-bars">
+          <div class="ch-col"><div class="bar-val">4</div><div class="bar" style="height:42px;background:var(--met);opacity:.5"></div><div class="bar-lbl">Lun</div></div>
+          <div class="ch-col"><div class="bar-val">6</div><div class="bar" style="height:60px;background:var(--met);opacity:.65"></div><div class="bar-lbl">Mar</div></div>
+          <div class="ch-col"><div class="bar-val">5</div><div class="bar" style="height:50px;background:var(--met);opacity:.55"></div><div class="bar-lbl">Mié</div></div>
+          <div class="ch-col"><div class="bar-val">7</div><div class="bar" style="height:70px;background:var(--met)"></div><div class="bar-lbl">Jue</div></div>
+          <div class="ch-col"><div class="bar-val">6</div><div class="bar" style="height:60px;background:var(--met);opacity:.6"></div><div class="bar-lbl">Vie</div></div>
+          <div class="ch-col"><div class="bar-val">2</div><div class="bar" style="height:22px;background:var(--l1);opacity:.5"></div><div class="bar-lbl">Sáb</div></div>
+          <div class="ch-col"><div class="bar-val">1</div><div class="bar" style="height:12px;background:var(--l1);opacity:.4"></div><div class="bar-lbl">Dom</div></div>
+        </div>
+      </div>
+
+      <div class="sec-label">Detalle de trayectos</div>
+
+      <div class="jcard">
+        <div class="jc-top">
+          <span class="jc-date">Hoy · @DateTime.Now.ToString("dddd d MMMM yyyy")</span>
+          <span class="jc-cost">-S/ 2.70</span>
+        </div>
+        <div class="jc-route">
+          <div class="r-dot" style="background:var(--met)"></div>
+          <div class="r-st">Naranjal</div>
+          <div class="r-line"></div>
+          <div class="r-dot" style="background:var(--l1)"></div>
+          <div class="r-st">Atocongo</div>
+          <div class="r-time">07:42 – 08:35 · 53 min</div>
+        </div>
+        <div class="jc-tags">
+          <div class="line-tag lt-met"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
+          <div class="line-tag lt-l1"><div class="line-dot" style="background:var(--l1)"></div>Línea 1</div>
+          <div class="line-tag lt-l1">Transbordo gratuito</div>
+        </div>
+      </div>
+
+      <div class="jcard">
+        <div class="jc-top">
+          <span class="jc-date">Ayer · @DateTime.Now.AddDays(-1).ToString("dddd d MMMM yyyy")</span>
+          <span class="jc-cost">-S/ 4.20</span>
+        </div>
+        <div class="jc-route">
+          <div class="r-dot" style="background:var(--met)"></div>
+          <div class="r-st">Comas</div>
+          <div class="r-line"></div>
+          <div class="r-dot" style="background:var(--met)"></div>
+          <div class="r-st">Javier Prado</div>
+          <div class="r-time">17:10 – 18:02 · 52 min</div>
+        </div>
+        <div class="jc-tags">
+          <div class="line-tag lt-met"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
+          <div class="line-tag lt-met">Expreso</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-label">Estadísticas del mes</div>
+      <div class="vs-box">
+        <div class="vs-lbl">Total viajes · Mayo</div>
+        <div class="vs-val">87</div>
+        <div class="vs-sub">Meta mensual: 120 viajes</div>
+        <div class="vs-bar"><div class="vs-fill" style="width:72%;background:var(--met)"></div></div>
+      </div>
+      <div class="vs-box">
+        <div class="vs-lbl">Gasto acumulado</div>
+        <div class="vs-val">S/ 142</div>
+        <div class="vs-sub">Promedio diario: S/ 5.50</div>
+        <div class="vs-bar"><div class="vs-fill" style="width:58%;background:var(--l2)"></div></div>
+      </div>
+      <div class="vs-box">
+        <div class="vs-lbl">Uso por línea</div>
+        <div class="lp-row">
+          <div class="lp-lbl"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
+          <div class="lp-bar"><div class="lp-f" style="width:65%;background:var(--met)"></div></div>
+          <div class="lp-pct">65%</div>
+        </div>
+        <div class="lp-row">
+          <div class="lp-lbl"><div class="line-dot" style="background:var(--l1)"></div>Línea 1</div>
+          <div class="lp-bar"><div class="lp-f" style="width:35%;background:var(--l1)"></div></div>
+          <div class="lp-pct">35%</div>
+        </div>
+      </div>
+      <div class="vs-box">
+        <div class="vs-lbl">Hora pico más frecuente</div>
+        <div class="vs-val" style="font-size:15px;margin-top:4px">07:30 – 08:30</div>
+        <div class="vs-sub">Mañana · Ida al trabajo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+    // --- LÓGICA DE FILTROS ---
+    private bool FilterWeek = true;
+    private bool FilterMonth = false;
+    private bool FilterLastMonth = false;
+    private bool FilterMetropolitano = false;
+    private bool FilterLinea1 = false;
+
+    private void SetFilter(int filterType)
+    {
+        FilterWeek = filterType == 1;
+        FilterMonth = filterType == 2;
+        FilterLastMonth = filterType == 3;
+    }
+
+    private void ToggleMetropolitano() => FilterMetropolitano = !FilterMetropolitano;
+    private void ToggleLinea1() => FilterLinea1 = !FilterLinea1;
+}
