@@ -28,9 +28,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSingleton<TransitSystem.Core.Interfaces.ITransitIssueService, TransitSystem.Core.Services.TransitIssueService>();
-
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
