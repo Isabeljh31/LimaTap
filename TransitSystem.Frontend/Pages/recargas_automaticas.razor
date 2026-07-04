@@ -1,0 +1,18 @@
+@page "/recarga-automatica"
+
+<PageTitle>Recarga Automática - LimaTap</PageTitle>
+
+<div class="recarga-auto-container">
+    <h1>Recarga Automática</h1>
+    <p class="subtitulo">Configura recargas automáticas para no quedarte sin saldo</p>
+
+    <div class="saldo-actual">
+        <span>Saldo disponible</span>
+        <h2>S/ @saldoActual.ToString("0.00")</h2>
+    </div>
+</div>
+
+@code {
+    private decimal saldoActual = 42.50m;
+    
+}
