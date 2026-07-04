@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TransitSystem.Shared.Models
 {
-    internal class TransitIssueDto
+    public class TransitIssueDto
     {
         public string IssueId { get; set; } = "INC-" + Guid.NewGuid().ToString().Substring(0, 5).ToUpper();
         public string CardNumber { get; set; } = string.Empty;
