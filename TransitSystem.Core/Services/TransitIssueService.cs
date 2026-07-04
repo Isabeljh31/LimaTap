@@ -29,5 +29,17 @@ namespace TransitSystem.Core.Services
         {
             return _issuesDatabase;
         }
+
+        public List<TransitIssueDto> GetIssuesByCardNumber(string cardNumber)
+        {
+            if (string.IsNullOrWhiteSpace(cardNumber))
+            {
+                return new List<TransitIssueDto>();
+            }
+
+            return _issuesDatabase
+                .Where(x => x.CardNumber.Equals(cardNumber, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
     }
 }

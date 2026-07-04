@@ -12,5 +12,6 @@ namespace TransitSystem.Core.Interfaces
     {
         bool RegisterIssue(TransitIssueDto issue);
         List<TransitIssueDto> GetActiveIssues();
+        List<TransitIssueDto> GetIssuesByCardNumber(string cardNumber);
     }
 }
