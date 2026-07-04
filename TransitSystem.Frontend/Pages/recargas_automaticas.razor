@@ -14,5 +14,17 @@
 
 @code {
     private decimal saldoActual = 42.50m;
-    
+    private ConfiguracionRecarga config = new()
+    {
+        Activa = false,
+        MontoUmbral = 10m,
+        MontoRecarga = 30m
+    };
+
+    public class ConfiguracionRecarga
+    {
+        public bool Activa { get; set; }
+        public decimal MontoUmbral { get; set; }
+        public decimal MontoRecarga { get; set; }
+    }
 }
