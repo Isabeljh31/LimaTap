@@ -1,0 +1,322 @@
+@page "/recarga-automatica"
+
+
+<div class="recarga-auto-container">
+
+    <div class="header-row">
+        <div>
+            <h1>Recarga Automática</h1>
+            <p class="subtitulo">Configura recargas automáticas para no quedarte sin saldo</p>
+        </div>
+        <div class="badge-saldo">
+            <span>SALDO ACTUAL</span>
+            <h2>S/ @saldoActual.ToString("0.00")</h2>
+        </div>
+    </div>
+
+    <div class="grid-principal">
+
+        <div class="panel">
+            <h3 class="label-seccion">CONFIGURACIÓN</h3>
+
+            <label class="switch-row">
+                <span>Activar recarga automática</span>
+                <input type="checkbox" @bind="config.Activa" class="switch-input" />
+            </label>
+
+            @if (config.Activa)
+            {
+                <div class="campo">
+                    <label>Recargar cuando el saldo baje de</label>
+                    <div class="input-moneda">
+                        <span>S/</span>
+                        <input type="number" @bind="config.MontoUmbral" step="1" />
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label>Monto a recargar</label>
+                    <div class="input-moneda">
+                        <span>S/</span>
+                        <input type="number" @bind="config.MontoRecarga" step="5" />
+                    </div>
+                </div>
+
+                <button class="btn-guardar" @onclick="GuardarConfiguracion">
+                    Guardar configuración
+                </button>
+
+                @if (!string.IsNullOrEmpty(mensaje))
+                {
+                    <p class="mensaje-confirmacion">✓ @mensaje</p>
+                }
+            }
+        </div>
+
+        <div class="panel">
+            <h3 class="label-seccion">RESUMEN</h3>
+
+            <div class="resumen-item">
+                <span>Estado</span>
+                <span class="@(config.Activa ? "estado-activo" : "estado-inactivo")">
+                    @(config.Activa ? "Activa" : "Inactiva")
+                </span>
+            </div>
+            <div class="resumen-item">
+                <span>Umbral configurado</span>
+                <span>S/ @config.MontoUmbral.ToString("0.00")</span>
+            </div>
+            <div class="resumen-item destacado">
+                <span>Monto por recarga</span>
+                <span>S/ @config.MontoRecarga.ToString("0.00")</span>
+            </div>
+
+            <h3 class="label-seccion historial-titulo">ÚLTIMAS RECARGAS AUTOMÁTICAS</h3>
+            @foreach (var r in historial)
+            {
+                <div class="item-recarga">
+                    <span>@r.Fecha.ToString("dd/MM/yyyy")</span>
+                    <span class="monto-positivo">+S/ @r.Monto.ToString("0.00")</span>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .recarga-auto-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 32px;
+        font-family: inherit;
+    }
+
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 28px;
+    }
+
+    .header-row h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+        color: #1a1a1a;
+    }
+
+    .subtitulo {
+        color: #6b7280;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .badge-saldo {
+        background: #fdeaea;
+        border-radius: 12px;
+        padding: 12px 20px;
+        text-align: right;
+    }
+
+    .badge-saldo span {
+        font-size: 11px;
+        font-weight: 600;
+        color: #d32f2f;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-saldo h2 {
+        margin: 4px 0 0 0;
+        color: #d32f2f;
+        font-size: 24px;
+        font-family: 'Courier New', monospace;
+    }
+
+    .grid-principal {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 20px;
+    }
+
+    @@media (max-width: 800px) {
+        .grid-principal { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+        background: white;
+        border-radius: 14px;
+        padding: 24px;
+        border: 1px solid #eef0f2;
+    }
+
+    .label-seccion {
+        font-size: 12px;
+        font-weight: 700;
+        color: #9ca3af;
+        letter-spacing: 0.5px;
+        margin: 0 0 18px 0;
+    }
+
+    .historial-titulo {
+        margin-top: 24px;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 20px;
+    }
+
+    .switch-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        background: #f9fafb;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .switch-input {
+        width: 18px;
+        height: 18px;
+        accent-color: #d32f2f;
+        cursor: pointer;
+    }
+
+    .campo {
+        margin-bottom: 16px;
+    }
+
+    .campo label {
+        display: block;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 6px;
+    }
+
+    .input-moneda {
+        display: flex;
+        align-items: center;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 14px;
+        background: #fafafa;
+    }
+
+    .input-moneda span {
+        color: #9ca3af;
+        font-weight: 600;
+        margin-right: 6px;
+    }
+
+    .input-moneda input {
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        font-weight: 600;
+        width: 100%;
+        outline: none;
+        color: #1a1a1a;
+    }
+
+    .btn-guardar {
+        width: 100%;
+        background: #d32f2f;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: background 0.2s;
+    }
+
+    .btn-guardar:hover {
+        background: #b71c1c;
+    }
+
+    .mensaje-confirmacion {
+        margin-top: 12px;
+        color: #2e7d32;
+        background: #edf7ed;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .resumen-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #374151;
+    }
+
+    .resumen-item.destacado span:last-child {
+        color: #d32f2f;
+        font-weight: 700;
+    }
+
+    .estado-activo {
+        color: #2e7d32;
+        font-weight: 600;
+    }
+
+    .estado-inactivo {
+        color: #9ca3af;
+        font-weight: 600;
+    }
+
+    .item-recarga {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 14px;
+    }
+
+    .monto-positivo {
+        color: #2e7d32;
+        font-weight: 600;
+    }
+</style>
+
+@code {
+    private decimal saldoActual = 42.50m;
+
+    private ConfiguracionRecarga config = new()
+    {
+        Activa = false,
+        MontoUmbral = 10m,
+        MontoRecarga = 30m
+    };
+
+    public class ConfiguracionRecarga
+    {
+        public bool Activa { get; set; }
+        public decimal MontoUmbral { get; set; }
+        public decimal MontoRecarga { get; set; }
+    }
+
+    private string mensaje = "";
+
+    private void GuardarConfiguracion()
+    {
+        mensaje = $"Se recargará S/ {config.MontoRecarga} cuando el saldo baje de S/ {config.MontoUmbral}";
+    }
+
+    private List<RecargaHistorial> historial = new()
+    {
+        new() { Fecha = DateTime.Now.AddDays(-3), Monto = 30 },
+        new() { Fecha = DateTime.Now.AddDays(-10), Monto = 30 }
+    };
+
+    public class RecargaHistorial
+    {
+        public DateTime Fecha { get; set; }
+        public decimal Monto { get; set; }
+    }
+}
