@@ -54,7 +54,7 @@ namespace TransitSystem.Frontend.Services
             }
         }
 
-        // 4. NUEVO: Consultar estado de la tarjeta digital (para validar si está activa)
+        // 4. NUEVO: Consultar eastado de la tarjeta digital (para validr si está activa)
         public async Task<CardStatusDto> GetCardStatusAsync(string tokenId)
         {
             try
@@ -64,6 +64,20 @@ namespace TransitSystem.Frontend.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al consultar la tarjeta: {ex.Message}");
+                return null;
+            }
+        }
+
+        // 5. NUEVO: Obtener la información de estaciones para la vista de estaciones
+        public async Task<StationsPageDto> GetStationsAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<StationsPageDto>("api/Stations");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al consultar estaciones: {ex.Message}");
                 return null;
             }
         }
