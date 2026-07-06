@@ -1,5 +1,7 @@
 ﻿@page "/journeys"
 
+@using TransitSystem.Core.Domain.Entities
+
 <div class="tab-panel active">
   <div class="ph">
     <div>
@@ -46,16 +48,16 @@
 
       <div class="jcard">
         <div class="jc-top">
-          <span class="jc-date">Hoy · @DateTime.Now.ToString("dddd d MMMM yyyy")</span>
-          <span class="jc-cost">-S/ 2.70</span>
+          <span class="jc-date">Hoy · @LatestJourneyPreview.StartTime.ToString("dddd d MMMM yyyy")</span>
+          <span class="jc-cost">-S/ @LatestJourneyPreview.FareApplied.ToString("0.00")</span>
         </div>
         <div class="jc-route">
           <div class="r-dot" style="background:var(--met)"></div>
-          <div class="r-st">Naranjal</div>
+          <div class="r-st">@LatestJourneyPreview.OriginStationId</div>
           <div class="r-line"></div>
           <div class="r-dot" style="background:var(--l1)"></div>
-          <div class="r-st">Atocongo</div>
-          <div class="r-time">07:42 – 08:35 · 53 min</div>
+          <div class="r-st">@LatestJourneyPreview.DestinationStationId</div>
+          <div class="r-time">@LatestJourneyPreview.StartTime.ToString("HH:mm") – @LatestJourneyPreview.EndTime!.Value.ToString("HH:mm") · @LatestJourneyDurationMinutes min</div>
         </div>
         <div class="jc-tags">
           <div class="line-tag lt-met"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
@@ -127,6 +129,22 @@
     private bool FilterLastMonth = false;
     private bool FilterMetropolitano = false;
     private bool FilterLinea1 = false;
+
+    private readonly Journey LatestJourneyPreview = new()
+    {
+        JourneyId = "journey-demo-001",
+        AccountId = "account-demo-001",
+        OriginStationId = "Naranjal",
+        DestinationStationId = "Atocongo",
+        FareApplied = 2.70m,
+        StartTime = DateTime.Today.AddHours(7).AddMinutes(42),
+        EndTime = DateTime.Today.AddHours(8).AddMinutes(35)
+    };
+
+    private int LatestJourneyDurationMinutes =>
+        LatestJourneyPreview.EndTime is null
+            ? 0
+            : (int)Math.Round((LatestJourneyPreview.EndTime.Value - LatestJourneyPreview.StartTime).TotalMinutes);
 
     private void SetFilter(int filterType)
     {
