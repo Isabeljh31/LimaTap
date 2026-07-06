@@ -175,17 +175,39 @@
         try
         {
             var response = await ApiService.ValidateTapAsync(request);
-            isSuccess = response?.Success ?? false;
-            message = response?.Message ?? "No se recibió respuesta del servidor.";
+
+            if (response == null)
+            {
+                isSuccess = false;
+                message = "El servidor no devolvió una respuesta válida.";
+                return;
+            }
+
+            isSuccess = response.Success;
+            message = response.Message ?? "Operación completada.";
+
+            if (isSuccess)
+            {
+                request.TokenId = string.Empty;
+                request.SystemType = string.Empty;
+                request.StationId = string.Empty;
+                Console.WriteLine($"Validación realizada correctamente a las {DateTime.Now}");
+            }
+            else
+            {
+                Console.WriteLine($"Error de validación: {message}");
+            }
         }
         catch (Exception ex)
         {
             isSuccess = false;
             message = $"No se pudo completar la validación: {ex.Message}";
+            Console.WriteLine(ex);
         }
         finally
         {
             isProcessing = false;
+            StateHasChanged();
         }
     }
 }
