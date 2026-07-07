@@ -1,0 +1,305 @@
+@page "/stations"
+@inject TransitSystem.Frontend.Services.TransitApiService ApiService
+
+<PageTitle>LimaTap · Estaciones</PageTitle>
+
+<div class="stations-page">
+    <div class="ph">
+        <div>
+            <div class="ph-title">Estaciones y rutas</div>
+            <div class="ph-sub">Encuentra tu estación más cercana, revisa el estado de las líneas y planifica tu recorrido.</div>
+        </div>
+        <button class="btn btn-outline">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /><path d="M12 7v5l3 2" /></svg>
+            Actualizar
+        </button>
+    </div>
+
+    <div class="stations-grid">
+        <div class="map-card">
+            <div class="sec-label">Buscar estación</div>
+            <div class="search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                <input type="text" placeholder="Buscar por nombre o línea" />
+            </div>
+
+            <div class="station-list">
+                @foreach (var station in StationsList)
+                {
+                    <div class="station-item">
+                        <div class="station-main">
+                            <div class="station-dot" style="background:@station.Color"></div>
+                            <div>
+                                <div class="station-name">@station.Name</div>
+                                <div class="station-meta">@station.Line · @station.Distance</div>
+                            </div>
+                        </div>
+                        <div class="station-status @station.StatusClass">@station.Status</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="info-stack">
+            <div class="route-card">
+                <div class="sec-label">Ruta recomendada</div>
+                <div class="route-pill">@RecommendedRoute</div>
+                <div class="route-meta">Tiempo estimado: @EstimatedTime · Próximo servicio: @NextService</div>
+                <div class="route-badges">
+                    <div class="line-tag lt-met"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
+                    <div class="line-tag lt-l1"><div class="line-dot" style="background:var(--l1)"></div>Línea 1</div>
+                </div>
+            </div>
+
+            <div class="route-card">
+                <div class="sec-label">Estado del servicio</div>
+                <div class="service-row">
+                    @foreach (var item in ServiceStatus)
+                    {
+                        <div class="service-box">
+                            <div class="service-name">@item.Key</div>
+                            <div class="service-value @(item.Value.Contains("Oper") ? "green" : "amber")">@item.Value</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="route-card">
+                <div class="sec-label">Consejo del día</div>
+                <div class="tip-text">@Tip</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stations-page {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .stations-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+    }
+
+    .map-card, .route-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--border);
+        background: white;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    .search-box input {
+        border: 0;
+        outline: 0;
+        width: 100%;
+        font-size: 14px;
+        color: var(--text);
+        background: transparent;
+    }
+
+    .station-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .station-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: var(--bg2);
+    }
+
+    .station-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .station-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        box-shadow: 0 0 0 4px rgba(255,255,255,0.5);
+    }
+
+    .station-name {
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .station-meta {
+        font-size: 12px;
+        color: var(--text3);
+    }
+
+    .station-status {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 6px 8px;
+        border-radius: 999px;
+    }
+
+    .station-status.good {
+        background: rgba(16, 185, 129, 0.12);
+        color: #047857;
+    }
+
+    .station-status.warning {
+        background: rgba(245, 158, 11, 0.14);
+        color: #b45309;
+    }
+
+    .info-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .route-pill {
+        display: inline-block;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: var(--met-light);
+        color: var(--met);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .route-meta {
+        color: var(--text3);
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .route-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .service-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .service-box {
+        padding: 10px;
+        border-radius: 12px;
+        background: var(--bg2);
+    }
+
+    .service-name {
+        font-size: 11px;
+        color: var(--text3);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .service-value {
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .service-value.green { color: #047857; }
+    .service-value.amber { color: #b45309; }
+
+    .tip-text {
+        color: var(--text2);
+        line-height: 1.5;
+    }
+
+    @@media (max-width: 920px) {
+        .stations-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .service-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private List<StationItem> StationsList = new();
+    private string RecommendedRoute = "Cargando...";
+    private string EstimatedTime = "--";
+    private string NextService = "--";
+    private string Tip = "Cargando consejo...";
+    private Dictionary<string, string> ServiceStatus = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await ApiService.GetStationsAsync();
+            if (response != null)
+            {
+                StationsList = response.Stations.Select(s => new StationItem
+                {
+                    Name = s.Name,
+                    Line = s.Line,
+                    Distance = s.Distance,
+                    Status = s.Status,
+                    StatusClass = s.StatusClass,
+                    Color = s.Color
+                }).ToList();
+
+                RecommendedRoute = response.RecommendedRoute;
+                EstimatedTime = response.EstimatedTime;
+                NextService = response.NextService;
+                Tip = response.Tip;
+                ServiceStatus = response.ServiceStatus;
+            }
+        }
+        catch
+        {
+            RecommendedRoute = "Metropolitano · Naranjal → Central";
+            EstimatedTime = "18 min";
+            NextService = "2 min";
+            Tip = "No se pudo cargar la información, mostrando datos por defecto.";
+            ServiceStatus = new Dictionary<string, string>
+            {
+                ["Metropolitano"] = "Operativo",
+                ["Línea 1"] = "Operativa",
+                ["Línea 2"] = "En construcción"
+            };
+            StationsList = new List<StationItem>
+            {
+                new() { Name = "Estación Central", Line = "Metropolitano", Distance = "2 min", Status = "Operativo", StatusClass = "good", Color = "var(--met)" },
+                new() { Name = "Atocongo", Line = "Línea 1", Distance = "6 min", Status = "Operativo", StatusClass = "good", Color = "var(--l1)" }
+            };
+        }
+    }
+
+    private class StationItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Line { get; set; } = string.Empty;
+        public string Distance { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string StatusClass { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+    }
+}
