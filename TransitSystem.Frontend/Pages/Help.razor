@@ -2,45 +2,314 @@
 @using TransitSystem.Shared.Models
 @inject HttpClient Http
 
-<div class="container mt-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-danger text-white d-flex align-items-center">
-            <h5 class="mb-0"><i class="oi oi-warning me-2"></i> Central de Atención y Fricciones - LimaTap</h5>
+<style>
+    /* ─── MÓDULO DE ATENCIÓN ENCAPSULADO ─── */
+    .limatap-container {
+        max-width: 750px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .limatap-card {
+        background: var(--surface, #FFFFFF);
+        border: 1px solid var(--border, #E2E5EC);
+        border-radius: 14px;
+        box-shadow: 0 12px 32px rgba(26,31,54,0.1), 0 4px 8px rgba(26,31,54,0.06);
+        overflow: hidden;
+    }
+
+    .limatap-card-header {
+        background: linear-gradient(135deg, #C8102E 0%, #9B0B22 100%);
+        color: #fff;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+        .limatap-card-header svg {
+            width: 34px;
+            height: 34px;
+            padding: 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .25);
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .limatap-card-header h5 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: -.2px;
+        }
+
+    .limatap-card-body {
+        padding: 1.75rem 2rem 2rem;
+    }
+
+    .limatap-subtitle {
+        color: var(--text3, #9198B0);
+        font-size: 0.9rem;
+        margin-bottom: 1.75rem;
+        line-height: 1.55;
+    }
+
+    .limatap-form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .limatap-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text2, #4A5068);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+    .limatap-input,
+    .limatap-select,
+    .limatap-textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.88rem;
+        background: var(--surface2, #F8F9FB);
+        border: 1.5px solid var(--border, #E2E5EC);
+        border-radius: 10px;
+        color: var(--text, #1A1F36);
+        transition: border-color .15s, box-shadow .15s, background-color .15s;
+    }
+
+        .limatap-input:focus,
+        .limatap-select:focus,
+        .limatap-textarea:focus {
+            outline: none;
+            border-color: #C8102E;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(200, 16, 46, .08);
+        }
+
+    .limatap-textarea {
+        resize: vertical;
+        min-height: 84px;
+    }
+
+    .limatap-card-body > .limatap-form-group:nth-child(1) .limatap-input,
+    .limatap-card-body > .limatap-form-group:nth-child(2) .limatap-input {
+        padding-left: 2.4rem;
+        background-repeat: no-repeat;
+        background-position: 12px center;
+        background-size: 15px;
+    }
+
+    .limatap-card-body > .limatap-form-group:nth-child(1) .limatap-input {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239198B0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='1' y='4' width='22' height='16' rx='2'/%3E%3Cline x1='1' y1='10' x2='23' y2='10'/%3E%3C/svg%3E");
+    }
+
+    .limatap-card-body > .limatap-form-group:nth-child(2) .limatap-input {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239198B0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E");
+    }
+
+    .limatap-select {
+        appearance: none;
+        cursor: pointer;
+        padding-right: 2.4rem;
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 13px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239198B0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    }
+
+    .btn-limatap-submit {
+        width: 100%;
+        padding: 0.9rem;
+        background: #C8102E;
+        border: none;
+        border-radius: 11px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #fff;
+        cursor: pointer;
+        letter-spacing: .2px;
+        transition: background .2s, transform .15s, box-shadow .2s;
+    }
+
+        .btn-limatap-submit:hover {
+            background: #9B0B22;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(200, 16, 46, .28);
+        }
+
+        .btn-limatap-submit:active {
+            transform: scale(.98);
+        }
+
+    .limatap-alert {
+        margin-top: 1.25rem;
+        padding: 0.9rem 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        background: #E6F4EE;
+        border: 1px solid #9DD4B8;
+        color: #00582C;
+        animation: limatap-fade-in .25s ease;
+    }
+
+    @@keyframes limatap-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .limatap-divider {
+        border: 0;
+        border-top: 1px dashed var(--border, #E2E5EC);
+        margin: 2rem 0 1.5rem;
+    }
+
+    .limatap-history-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text2, #4A5068);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .limatap-table-wrapper {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border, #E2E5EC);
+    }
+
+    .limatap-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+        text-align: left;
+        background: #FFFFFF;
+    }
+
+        .limatap-table th {
+            background: #EEF0F4;
+            color: #4A5068;
+            padding: 0.7rem 1rem;
+            font-weight: 700;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .limatap-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #E2E5EC;
+            color: #4A5068;
+        }
+
+        .limatap-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .limatap-table td span[style] {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px !important;
+            background-color: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+</style>
+
+
+<div class="limatap-container">
+    <div class="limatap-card">
+        <div class="limatap-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+            <h5>Central de Atención y Fricciones - LimaTap</h5>
         </div>
-        <div class="card-body bg-light">
-            <p class="text-muted">¿Tuviste algún inconveniente en las estaciones del Metropolitano o Línea 1? Reporta tu caso de inmediato para soporte técnico.</p>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Número de Tarjeta LimaTap</label>
-                <input type="text" class="form-control" @bind="issue.CardNumber" placeholder="Ej. MET-987654" />
+        <div class="limatap-card-body">
+            <p class="limatap-subtitle">¿Tuviste algún inconveniente en las estaciones del Metropolitano o Línea 1? Reporta tu caso de inmediato para soporte técnico.</p>
+
+            <div class="limatap-form-group">
+                <label class="limatap-label">Número de Tarjeta LimaTap</label>
+                <input type="text" class="limatap-input" @bind="issue.CardNumber" placeholder="Ej. MET-987654" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Estación del Incidente</label>
-                <input type="text" class="form-control" @bind="issue.StationName" placeholder="Ej. Estación Central / Estación Angamos" />
+            <div class="limatap-form-group">
+                <label class="limatap-label">Estación del Incidente</label>
+                <input type="text" class="limatap-input" @bind="issue.StationName" placeholder="Ej. Estación Central / Estación Angamos" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Servicio de Transporte</label>
-                <select class="form-select" @bind="issue.SystemType">
+            <div class="limatap-form-group">
+                <label class="limatap-label">Servicio de Transporte</label>
+                <select class="limatap-select" @bind="issue.SystemType">
                     <option value="Metropolitano">Metropolitano</option>
                     <option value="Linea 1">Línea 1 (Metro de Lima)</option>
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Detalle de la Fricción o Reclamo</label>
-                <textarea class="form-control" @bind="issue.Description" rows="3" placeholder="Describa brevemente el problema (ej: torniquete no leyó saldo, máquina de recarga falló)..."></textarea>
+            <div class="limatap-form-group">
+                <label class="limatap-label">Detalle de la Fricción o Reclamo</label>
+                <textarea class="limatap-textarea" @bind="issue.Description" rows="3" placeholder="Describa brevemente el problema (ej: torniquete no leyó saldo, máquina de recarga falló)..."></textarea>
             </div>
 
-            <button class="btn btn-danger w-100" @onclick="EnviarReporteUrbano">Enviar Alerta de Soporte</button>
+            <button class="btn-limatap-submit" @onclick="EnviarReporteUrbano">Enviar Alerta de Soporte</button>
 
             @if (!string.IsNullOrEmpty(mensajeAlerta))
             {
-                <div class="alert alert-success mt-3 shadow-sm border-0" role="alert">
-                    <i class="oi oi-check me-1"></i> @mensajeAlerta
+                <div class="limatap-alert" role="alert">
+                    @mensajeAlerta
                 </div>
             }
+
+            <hr class="limatap-divider" />
+
+            <h6 class="limatap-history-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                Mis Reportes Recientes (Simulación Local)
+            </h6>
+
+            <div class="limatap-table-wrapper">
+                <table class="limatap-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Estación</th>
+                            <th>Sistema</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>INC-8A32F</strong></td>
+                            <td>Estación Central</td>
+                            <td>Metropolitano</td>
+                            <td><span style="color: #d97706; font-weight: 600;">En Revisión</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>INC-4B110</strong></td>
+                            <td>Estación Angamos</td>
+                            <td>Línea 1</td>
+                            <td><span style="color: #16a34a; font-weight: 600;">Resuelto</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -63,7 +332,7 @@
             if (response.IsSuccessStatusCode)
             {
                 mensajeAlerta = $"¡Reporte enviado! Se ha generado tu caso. Estado actual: Asignado a Soporte Técnico.";
-                issue = new TransitIssueDto(); // Limpiar formulario
+                issue = new TransitIssueDto();
             }
             else
             {
@@ -72,7 +341,6 @@
         }
         catch (Exception)
         {
-            // Fallback por si la API local no está corriendo en paralelo en Blazor WASM
             mensajeAlerta = "Alerta capturada localmente. El sistema unificado procesará su caso a la brevedad.";
         }
     }
