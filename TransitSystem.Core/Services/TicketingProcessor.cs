@@ -31,18 +31,20 @@ namespace TransitSystem.Core.Services
         public async Task<bool> ProcessTapInAsync(string tokenId, string systemType, string stationId)
         {
             // 1. Identificar la tarjeta por el Token NFC usando el repositorio correcto
-            var card = await _cardRepository.GetCardByTokenIdAsync(tokenId); 
+            var card = await _cardRepository.GetCardByTokenIdAsync(tokenId);
             if (card == null || !card.IsActive) return false;
 
             // 2. Obtener la cuenta maestra (Modelo ABT)
             var account = await _accountRepository.GetByIdAsync(card.AccountId);
 
-            // CORRECCIÓN: Usar el Enum de seguridad
             if (account == null || account.Status != AccountStatus.Active) return false;
 
             // 3. Seleccionar la tarifa del sistema (Metropolitano o Línea 1)
-            var strategy = _tariffStrategies.FirstOrDefault(s => s.SystemType == systemType);
-            if (strategy == null) throw new InvalidOperationException($"Sistema '{systemType}' no soportado.");
+            var normalizedSystemType = NormalizeSystemType(systemType);
+            var strategy = _tariffStrategies.FirstOrDefault(s =>
+                string.Equals(NormalizeSystemType(s.SystemType), normalizedSystemType, StringComparison.OrdinalIgnoreCase));
+
+            if (strategy == null) return false;
 
             decimal baseFare = strategy.CalculateFare();
 
@@ -66,6 +68,11 @@ namespace TransitSystem.Core.Services
             await _validationLogRepository.LogValidationAsync(valEvent);
 
             return true;
+        }
+
+        private static string NormalizeSystemType(string systemType)
+        {
+            return (systemType ?? string.Empty).Trim().Replace(" ", string.Empty, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
