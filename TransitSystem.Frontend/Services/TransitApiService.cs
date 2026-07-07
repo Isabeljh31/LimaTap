@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using TransitSystem.Core.Domain.Entities;
 using TransitSystem.Shared.Models; 
 
 namespace TransitSystem.Frontend.Services
@@ -65,6 +67,20 @@ namespace TransitSystem.Frontend.Services
             {
                 Console.WriteLine($"Error al consultar la tarjeta: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task<List<Journey>> GetJourneyHistoryAsync(string accountId)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<List<Journey>>($"api/Journey/{accountId}")
+                       ?? new List<Journey>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener el historial de viajes: {ex.Message}");
+                return new List<Journey>();
             }
         }
     }

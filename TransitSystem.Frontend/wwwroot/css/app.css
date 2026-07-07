@@ -1119,6 +1119,9 @@ body {
 }
 
 .fc {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     padding: 6px 13px;
     border-radius: 20px;
     font-size: 11px;
@@ -1126,6 +1129,7 @@ body {
     cursor: pointer;
     transition: all .15s;
     white-space: nowrap;
+    font-family: var(--sans);
 }
 
     .fc.on {
@@ -1193,6 +1197,28 @@ body {
 
 .st-box.r .st-val {
     color: var(--met)
+}
+
+.journey-alert {
+    background: var(--l1-light);
+    border: 1px solid var(--l1-mid);
+    border-radius: 11px;
+    color: var(--l1-dark);
+    font-size: 12px;
+    font-weight: 600;
+    margin: -8px 0 1rem;
+    padding: 10px 13px
+}
+
+.journey-empty {
+    background: var(--surface);
+    border: 1px dashed var(--border2);
+    border-radius: 13px;
+    color: var(--text3);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 22px;
+    text-align: center
 }
 
 /* Bar chart */
@@ -1275,6 +1301,10 @@ body {
     font-family: var(--mono)
 }
 
+.jc-cost.free {
+    color: var(--l1)
+}
+
 .jc-route {
     display: flex;
     align-items: center;
@@ -1309,7 +1339,8 @@ body {
 .r-st {
     font-size: 12px;
     font-weight: 600;
-    color: var(--text)
+    color: var(--text);
+    min-width: 0
 }
 
 .r-time {
@@ -1321,7 +1352,8 @@ body {
 
 .jc-tags {
     display: flex;
-    gap: 5px
+    gap: 5px;
+    flex-wrap: wrap
 }
 
 /* Sidebar viajes */
@@ -1790,5 +1822,19 @@ body {
 
     .mini-stats-grid {
         grid-template-columns: 1fr 1fr
+    }
+
+    .jc-route {
+        flex-wrap: wrap;
+        align-items: flex-start
+    }
+
+    .r-line {
+        min-width: 38px
+    }
+
+    .r-time {
+        width: 100%;
+        margin-left: 17px
     }
 }
