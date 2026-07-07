@@ -1,0 +1,129 @@
+@page "/qr-viewer"
+@using TransitSystem.Frontend.Components
+
+<div class="tab-panel active">
+    <div class="ph">
+        <div>
+            <div class="ph-title">Código QR</div>
+            <div class="ph-sub">Visualiza el código QR de tu tarjeta o transacción</div>
+        </div>
+    </div>
+
+    <div class="qr-content-grid">
+        <div class="qr-section">
+            <div class="sec-label">Código QR de Tarjeta</div>
+            <QRCodeViewer 
+                Data="@CardQRData"
+                Title="Tu tarjeta digital"
+                Description="@CardDescription"
+                Size="300" />
+        </div>
+
+        <div class="qr-section">
+            <div class="sec-label">Código QR de Transacción</div>
+            <QRCodeViewer 
+                Data="@TransactionQRData"
+                Title="Transacción #TRX001"
+                Description="@TransactionDescription"
+                Size="300" />
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f8f8; border-radius: 8px;">
+        <div class="sec-label">Generar QR personalizado</div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <input type="text" 
+                @bind="CustomQRData" 
+                placeholder="Ingresa texto para generar QR"
+                class="input-field"
+                style="flex: 1;" />
+            <button @onclick="UpdateCustomQR" class="btn btn-primary">
+                Generar
+            </button>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(CustomQRData))
+        {
+            <div style="margin-top: 2rem;">
+                <QRCodeViewer 
+                    Data="@CustomQRData"
+                    Title="QR Personalizado"
+                    Description="@CustomQRData"
+                    Size="300" />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string CardQRData = "CARD:12345|ACCOUNT:ACC001|HOLDER:Carlos López";
+    private string TransactionQRData = "TRX001|ACCOUNT:ACC001|AMOUNT:25.50|DATE:2026-07-03";
+    private string CardDescription => "ID: •••• 7823";
+    private string TransactionDescription => "S/. 25.50 - 3 Jul 2026";
+    private string CustomQRData = string.Empty;
+
+    private void UpdateCustomQR()
+    {
+        StateHasChanged();
+    }
+}
+
+<style>
+.qr-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.qr-section {
+    padding: 1.5rem;
+    background: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.input-field {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.sec-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+</style>
