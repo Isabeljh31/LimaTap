@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TransitSystem.Core.Interfaces;
-using TransitSystem.Core.Domain.Cards;    // Importamos las Tarjetas
-using TransitSystem.Core.Domain.Entities; // Importamos UserAccount y ValidationEvent
-using TransitSystem.Core.Domain.Enums;    // Importamos los Estados
+using TransitSystem.Core.Domain.Cards;    
+using TransitSystem.Core.Domain.Entities; 
+using TransitSystem.Core.Domain.Enums;    
 
 namespace TransitSystem.Core.Services
 {
@@ -31,7 +31,7 @@ namespace TransitSystem.Core.Services
         public async Task<bool> ProcessTapInAsync(string tokenId, string systemType, string stationId)
         {
             // 1. Identificar la tarjeta por el Token NFC usando el repositorio correcto
-            var card = await _cardRepository.GetCardByTokenIdAsync(tokenId); // CORREGIDO AQUÍ
+            var card = await _cardRepository.GetCardByTokenIdAsync(tokenId); 
             if (card == null || !card.IsActive) return false;
 
             // 2. Obtener la cuenta maestra (Modelo ABT)
@@ -52,9 +52,9 @@ namespace TransitSystem.Core.Services
             // 5. Y 6. Ejecutar el cobro de forma segura (El dominio toma la decisión)
             bool paymentSuccessful = account.DeductFunds(finalFare);
 
-            if (!paymentSuccessful) return false; // El método devuelve false si no hay saldo
+            if (!paymentSuccessful) return false; 
 
-            // Guardar los cambios de la cuenta completa en la base de datos
+           
             await _accountRepository.UpdateAsync(account);
 
             // 7. Guardar el log de la transacción
