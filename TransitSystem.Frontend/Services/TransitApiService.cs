@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using TransitSystem.Core.Domain.Entities;
 using TransitSystem.Shared.Models; 
 
 namespace TransitSystem.Frontend.Services
@@ -54,7 +56,7 @@ namespace TransitSystem.Frontend.Services
             }
         }
 
-        // 4. NUEVO: Consultar eastado de la tarjeta digital (para validr si está activa)
+        // 4. NUEVO: Consultar estado de la tarjeta digital (para validar si está activa)
         public async Task<CardStatusDto> GetCardStatusAsync(string tokenId)
         {
             try
@@ -68,18 +70,45 @@ namespace TransitSystem.Frontend.Services
             }
         }
 
-        // 5. NUEVO: Obtener la información de estaciones para la vista de estaciones
-        public async Task<StationsPageDto> GetStationsAsync()
+        public async Task<List<Journey>> GetJourneyHistoryAsync(string accountId)
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<StationsPageDto>("api/Stations");
+                return await _httpClient.GetFromJsonAsync<List<Journey>>($"api/Journey/{accountId}")
+                       ?? new List<Journey>();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al consultar estaciones: {ex.Message}");
-                return null;
+                Console.WriteLine($"Error al obtener el historial de viajes: {ex.Message}");
+                return new List<Journey>();
             }
+        }
+
+        public string GetJourneyExportUrl(
+            string accountId,
+            DateTime? from = null,
+            DateTime? to = null,
+            bool includeMetropolitano = true,
+            bool includeLinea1 = true)
+        {
+            var safeAccountId = Uri.EscapeDataString(accountId);
+            var parameters = new List<string>();
+
+            if (from is not null)
+            {
+                parameters.Add($"from={Uri.EscapeDataString(from.Value.ToString("O"))}");
+            }
+
+            if (to is not null)
+            {
+                parameters.Add($"to={Uri.EscapeDataString(to.Value.ToString("O"))}");
+            }
+
+            parameters.Add($"includeMetropolitano={includeMetropolitano.ToString().ToLowerInvariant()}");
+            parameters.Add($"includeLinea1={includeLinea1.ToString().ToLowerInvariant()}");
+
+            var query = parameters.Count == 0 ? string.Empty : $"?{string.Join("&", parameters)}";
+            return new Uri(_httpClient.BaseAddress!, $"api/JourneyExport/{safeAccountId}{query}").ToString();
         }
     }
 }

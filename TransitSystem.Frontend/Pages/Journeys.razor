@@ -1,140 +1,480 @@
-﻿@page "/journeys"
+@page "/journeys"
+
+@using System.Globalization
+@using TransitSystem.Core.Domain.Entities
+@inject TransitSystem.Frontend.Services.TransitApiService ApiService
+
+<PageTitle>LimaTap · Mis viajes</PageTitle>
 
 <div class="tab-panel active">
   <div class="ph">
     <div>
       <div class="ph-title">Mis viajes</div>
-      <div class="ph-sub">Historial completo de trayectos y estadísticas de uso</div>
+      <div class="ph-sub">@PeriodSummary · @FilteredJourneys.Count viaje(s) encontrados</div>
     </div>
-    <button class="btn btn-outline">
+    <a class="btn btn-outline" href="/journeys/export" style="text-decoration:none">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Exportar
+    </a>
+  </div>
+
+  <div class="filters" role="toolbar" aria-label="Filtros del historial">
+    @foreach (var filter in PeriodFilters)
+    {
+      <button type="button"
+              class="fc @(SelectedPeriod == filter.Value ? "on" : "off")"
+              aria-pressed="@(SelectedPeriod == filter.Value ? "true" : "false")"
+              @onclick="() => SelectPeriod(filter.Value)">
+        @filter.Label
+      </button>
+    }
+
+    <button type="button"
+            class="fc @(ShowMetropolitano ? "on" : "off")"
+            aria-pressed="@(ShowMetropolitano ? "true" : "false")"
+            @onclick="ToggleMetropolitano">
+      <div class="line-dot" style="background:var(--met)"></div>Metropolitano
+    </button>
+    <button type="button"
+            class="fc @(ShowLinea1 ? "fc-l1 on" : "off")"
+            aria-pressed="@(ShowLinea1 ? "true" : "false")"
+            @onclick="ToggleLinea1">
+      <div class="line-dot" style="background:var(--l1)"></div>Línea 1
     </button>
   </div>
 
-  <div class="filters">
-    <div class="fc @(FilterWeek ? "on" : "off")" @onclick="() => SetFilter(1)">Esta semana</div>
-    <div class="fc @(FilterMonth ? "on" : "off")" @onclick="() => SetFilter(2)">Este mes</div>
-    <div class="fc @(FilterLastMonth ? "on" : "off")" @onclick="() => SetFilter(3)">Último mes</div>
-    <div class="fc @(FilterMetropolitano ? "on" : "off")" @onclick="ToggleMetropolitano" style="display:flex;align-items:center;gap:5px"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
-    <div class="fc @(FilterLinea1 ? "fc-l1 on" : "off")" @onclick="ToggleLinea1" style="display:flex;align-items:center;gap:5px"><div class="line-dot" style="background:var(--l1)"></div>Línea 1</div>
-  </div>
-
   <div class="stats-row">
-    <div class="st-box"><div class="st-val">23</div><div class="st-lbl">Viajes esta semana</div></div>
-    <div class="st-box r"><div class="st-val">S/ 38</div><div class="st-lbl">Gasto total semana</div></div>
-    <div class="st-box g"><div class="st-val">3</div><div class="st-lbl">Transbordos gratuitos</div></div>
-    <div class="st-box g"><div class="st-val">S/ 4.50</div><div class="st-lbl">Ahorro en transbordos</div></div>
+    <div class="st-box"><div class="st-val">@FilteredJourneys.Count</div><div class="st-lbl">Viajes filtrados</div></div>
+    <div class="st-box r"><div class="st-val">@FormatCurrency(TotalSpent)</div><div class="st-lbl">Gasto del periodo</div></div>
+    <div class="st-box g"><div class="st-val">@FreeTransfers</div><div class="st-lbl">Transbordos gratuitos</div></div>
+    <div class="st-box g"><div class="st-val">@FormatCurrency(TransferSavings)</div><div class="st-lbl">Ahorro estimado</div></div>
   </div>
 
   <div class="viajes-grid">
     <div>
       <div class="chart-area">
-        <div class="sec-label" style="margin-bottom:12px">Viajes por día — esta semana</div>
+        <div class="sec-label" style="margin-bottom:12px">@ChartTitle</div>
         <div class="chart-bars">
-          <div class="ch-col"><div class="bar-val">4</div><div class="bar" style="height:42px;background:var(--met);opacity:.5"></div><div class="bar-lbl">Lun</div></div>
-          <div class="ch-col"><div class="bar-val">6</div><div class="bar" style="height:60px;background:var(--met);opacity:.65"></div><div class="bar-lbl">Mar</div></div>
-          <div class="ch-col"><div class="bar-val">5</div><div class="bar" style="height:50px;background:var(--met);opacity:.55"></div><div class="bar-lbl">Mié</div></div>
-          <div class="ch-col"><div class="bar-val">7</div><div class="bar" style="height:70px;background:var(--met)"></div><div class="bar-lbl">Jue</div></div>
-          <div class="ch-col"><div class="bar-val">6</div><div class="bar" style="height:60px;background:var(--met);opacity:.6"></div><div class="bar-lbl">Vie</div></div>
-          <div class="ch-col"><div class="bar-val">2</div><div class="bar" style="height:22px;background:var(--l1);opacity:.5"></div><div class="bar-lbl">Sáb</div></div>
-          <div class="ch-col"><div class="bar-val">1</div><div class="bar" style="height:12px;background:var(--l1);opacity:.4"></div><div class="bar-lbl">Dom</div></div>
+          @foreach (var bucket in ChartBuckets)
+          {
+            <div class="ch-col">
+              <div class="bar-val">@bucket.Count</div>
+              <div class="bar" style="@GetBarStyle(bucket)"></div>
+              <div class="bar-lbl">@bucket.Label</div>
+            </div>
+          }
         </div>
       </div>
 
       <div class="sec-label">Detalle de trayectos</div>
 
-      <div class="jcard">
-        <div class="jc-top">
-          <span class="jc-date">Hoy · @DateTime.Now.ToString("dddd d MMMM yyyy")</span>
-          <span class="jc-cost">-S/ 2.70</span>
-        </div>
-        <div class="jc-route">
-          <div class="r-dot" style="background:var(--met)"></div>
-          <div class="r-st">Naranjal</div>
-          <div class="r-line"></div>
-          <div class="r-dot" style="background:var(--l1)"></div>
-          <div class="r-st">Atocongo</div>
-          <div class="r-time">07:42 – 08:35 · 53 min</div>
-        </div>
-        <div class="jc-tags">
-          <div class="line-tag lt-met"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
-          <div class="line-tag lt-l1"><div class="line-dot" style="background:var(--l1)"></div>Línea 1</div>
-          <div class="line-tag lt-l1">Transbordo gratuito</div>
-        </div>
-      </div>
-
-      <div class="jcard">
-        <div class="jc-top">
-          <span class="jc-date">Ayer · @DateTime.Now.AddDays(-1).ToString("dddd d MMMM yyyy")</span>
-          <span class="jc-cost">-S/ 4.20</span>
-        </div>
-        <div class="jc-route">
-          <div class="r-dot" style="background:var(--met)"></div>
-          <div class="r-st">Comas</div>
-          <div class="r-line"></div>
-          <div class="r-dot" style="background:var(--met)"></div>
-          <div class="r-st">Javier Prado</div>
-          <div class="r-time">17:10 – 18:02 · 52 min</div>
-        </div>
-        <div class="jc-tags">
-          <div class="line-tag lt-met"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
-          <div class="line-tag lt-met">Expreso</div>
-        </div>
-      </div>
+      @if (IsLoading)
+      {
+        <div class="journey-empty">Cargando historial...</div>
+      }
+      else if (FilteredJourneys.Count == 0)
+      {
+        <div class="journey-empty">No hay viajes en este periodo.</div>
+      }
+      else
+      {
+        @foreach (var journey in FilteredJourneys)
+        {
+          <div class="jcard">
+            <div class="jc-top">
+              <span class="jc-date">@FormatJourneyDate(journey.StartTime)</span>
+              <span class="jc-cost @(journey.IsFreeTransfer ? "free" : "")">@FormatFare(journey)</span>
+            </div>
+            <div class="jc-route">
+              <div class="r-dot" style="background:@GetLineColor(journey.LineName)"></div>
+              <div class="r-st">@journey.Origin</div>
+              <div class="r-line"></div>
+              <div class="r-dot" style="background:@GetLineColor(journey.LineName)"></div>
+              <div class="r-st">@journey.Destination</div>
+              <div class="r-time">@journey.StartTime.ToString("HH:mm") - @journey.EndTime.ToString("HH:mm") · @journey.DurationMinutes min</div>
+            </div>
+            <div class="jc-tags">
+              <div class="line-tag @GetLineTagClass(journey.LineName)"><div class="line-dot" style="background:@GetLineColor(journey.LineName)"></div>@journey.LineName</div>
+              <div class="line-tag @GetLineTagClass(journey.LineName)">@journey.RouteKind</div>
+              @if (journey.IsFreeTransfer)
+              {
+                <div class="line-tag lt-l1">Transbordo gratuito</div>
+              }
+            </div>
+          </div>
+        }
+      }
     </div>
 
     <div>
       <div class="sec-label">Estadísticas del mes</div>
       <div class="vs-box">
-        <div class="vs-lbl">Total viajes · Mayo</div>
-        <div class="vs-val">87</div>
-        <div class="vs-sub">Meta mensual: 120 viajes</div>
-        <div class="vs-bar"><div class="vs-fill" style="width:72%;background:var(--met)"></div></div>
+        <div class="vs-lbl">Total viajes · @Today.ToString("MMMM", PeCulture)</div>
+        <div class="vs-val">@MonthlyTrips</div>
+        <div class="vs-sub">Meta mensual: @MonthlyTarget viajes</div>
+        <div class="vs-bar"><div class="vs-fill" style="width:@MonthlyProgressPercent%;background:var(--met)"></div></div>
       </div>
       <div class="vs-box">
         <div class="vs-lbl">Gasto acumulado</div>
-        <div class="vs-val">S/ 142</div>
-        <div class="vs-sub">Promedio diario: S/ 5.50</div>
-        <div class="vs-bar"><div class="vs-fill" style="width:58%;background:var(--l2)"></div></div>
+        <div class="vs-val">@FormatCurrency(MonthlySpend)</div>
+        <div class="vs-sub">Promedio por viaje: @FormatCurrency(AverageFare)</div>
+        <div class="vs-bar"><div class="vs-fill" style="width:@SpendProgressPercent%;background:var(--l2)"></div></div>
       </div>
       <div class="vs-box">
         <div class="vs-lbl">Uso por línea</div>
-        <div class="lp-row">
-          <div class="lp-lbl"><div class="line-dot" style="background:var(--met)"></div>Metropolitano</div>
-          <div class="lp-bar"><div class="lp-f" style="width:65%;background:var(--met)"></div></div>
-          <div class="lp-pct">65%</div>
-        </div>
-        <div class="lp-row">
-          <div class="lp-lbl"><div class="line-dot" style="background:var(--l1)"></div>Línea 1</div>
-          <div class="lp-bar"><div class="lp-f" style="width:35%;background:var(--l1)"></div></div>
-          <div class="lp-pct">35%</div>
-        </div>
+        @if (LineUsageItems.Count == 0)
+        {
+          <div class="vs-sub">Sin viajes para mostrar</div>
+        }
+        else
+        {
+          @foreach (var line in LineUsageItems)
+          {
+            <div class="lp-row">
+              <div class="lp-lbl"><div class="line-dot" style="background:@GetLineColor(line.LineName)"></div>@line.LineName</div>
+              <div class="lp-bar"><div class="lp-f" style="width:@line.Percentage%;background:@GetLineColor(line.LineName)"></div></div>
+              <div class="lp-pct">@line.Percentage%</div>
+            </div>
+          }
+        }
       </div>
       <div class="vs-box">
         <div class="vs-lbl">Hora pico más frecuente</div>
-        <div class="vs-val" style="font-size:15px;margin-top:4px">07:30 – 08:30</div>
-        <div class="vs-sub">Mañana · Ida al trabajo</div>
+        <div class="vs-val" style="font-size:15px;margin-top:4px">@PeakHourWindow</div>
+        <div class="vs-sub">@MostUsedLine · @MostUsedRouteKind</div>
       </div>
     </div>
   </div>
 </div>
 
 @code {
-    // --- LÓGICA DE FILTROS ---
-    private bool FilterWeek = true;
-    private bool FilterMonth = false;
-    private bool FilterLastMonth = false;
-    private bool FilterMetropolitano = false;
-    private bool FilterLinea1 = false;
+    private const string DemoAccountId = "12345";
+    private const decimal AverageTransferFare = 2.70m;
+    private const int MonthlyTarget = 120;
+    private static readonly CultureInfo PeCulture = CultureInfo.GetCultureInfo("es-PE");
 
-    private void SetFilter(int filterType)
+    private readonly PeriodFilter[] PeriodFilters =
     {
-        FilterWeek = filterType == 1;
-        FilterMonth = filterType == 2;
-        FilterLastMonth = filterType == 3;
+        new(JourneyPeriod.Week, "Esta semana"),
+        new(JourneyPeriod.Month, "Este mes"),
+        new(JourneyPeriod.LastMonth, "Último mes")
+    };
+
+    private JourneyPeriod SelectedPeriod = JourneyPeriod.Week;
+    private bool ShowMetropolitano = true;
+    private bool ShowLinea1 = true;
+    private bool IsLoading = true;
+    private List<JourneyViewModel> JourneyHistory = new();
+
+    private DateTime Today => DateTime.Today;
+    private DateTime CurrentMonthStart => new(Today.Year, Today.Month, 1);
+    private DateTime WeekStart => StartOfWeek(Today);
+
+    private DateTime PeriodStart => SelectedPeriod switch
+    {
+        JourneyPeriod.Week => WeekStart,
+        JourneyPeriod.Month => CurrentMonthStart,
+        JourneyPeriod.LastMonth => CurrentMonthStart.AddMonths(-1),
+        _ => WeekStart
+    };
+
+    private DateTime PeriodEndExclusive => SelectedPeriod switch
+    {
+        JourneyPeriod.Week => WeekStart.AddDays(7),
+        JourneyPeriod.Month => Today.AddDays(1),
+        JourneyPeriod.LastMonth => CurrentMonthStart,
+        _ => Today.AddDays(1)
+    };
+
+    private string PeriodLabel => SelectedPeriod switch
+    {
+        JourneyPeriod.Week => "Esta semana",
+        JourneyPeriod.Month => "Este mes",
+        JourneyPeriod.LastMonth => "Último mes",
+        _ => "Historial"
+    };
+
+    private string PeriodSummary => $"{PeriodLabel} · {PeriodStart.ToString("d MMM", PeCulture)} al {PeriodEndExclusive.AddDays(-1).ToString("d MMM", PeCulture)}";
+    private string ChartTitle => SelectedPeriod == JourneyPeriod.Week ? "Viajes por día - esta semana" : $"Viajes por semana - {PeriodLabel.ToLower(PeCulture)}";
+
+    private List<JourneyViewModel> FilteredJourneys => JourneyHistory
+        .Where(IsInsideSelectedPeriod)
+        .Where(IsInsideSelectedLine)
+        .OrderByDescending(journey => journey.StartTime)
+        .ToList();
+
+    private int FreeTransfers => FilteredJourneys.Count(journey => journey.IsFreeTransfer);
+    private decimal TotalSpent => FilteredJourneys.Sum(journey => journey.Fare);
+    private decimal TransferSavings => FreeTransfers * AverageTransferFare;
+
+    private List<JourneyViewModel> MonthlyJourneys => JourneyHistory
+        .Where(journey => journey.StartTime >= CurrentMonthStart && journey.StartTime < CurrentMonthStart.AddMonths(1))
+        .ToList();
+
+    private int MonthlyTrips => MonthlyJourneys.Count;
+    private decimal MonthlySpend => MonthlyJourneys.Sum(journey => journey.Fare);
+    private decimal AverageFare => MonthlyTrips == 0 ? 0 : MonthlySpend / MonthlyTrips;
+    private int MonthlyProgressPercent => Math.Min(100, (int)Math.Round(MonthlyTrips * 100m / MonthlyTarget));
+    private int SpendProgressPercent => Math.Min(100, (int)Math.Round(MonthlySpend * 100m / 180m));
+
+    private string MostUsedLine => FilteredJourneys
+        .GroupBy(journey => journey.LineName)
+        .OrderByDescending(group => group.Count())
+        .Select(group => group.Key)
+        .FirstOrDefault() ?? "Sin datos";
+
+    private string MostUsedRouteKind => FilteredJourneys
+        .GroupBy(journey => journey.RouteKind)
+        .OrderByDescending(group => group.Count())
+        .Select(group => group.Key)
+        .FirstOrDefault() ?? "Sin viajes";
+
+    private string PeakHourWindow
+    {
+        get
+        {
+            var hour = FilteredJourneys
+                .GroupBy(journey => journey.StartTime.Hour)
+                .OrderByDescending(group => group.Count())
+                .Select(group => (int?)group.Key)
+                .FirstOrDefault();
+
+            return hour is null ? "Sin datos" : $"{hour.Value:00}:00 - {((hour.Value + 1) % 24):00}:00";
+        }
     }
 
-    private void ToggleMetropolitano() => FilterMetropolitano = !FilterMetropolitano;
-    private void ToggleLinea1() => FilterLinea1 = !FilterLinea1;
+    private List<LineUsageItem> LineUsageItems
+    {
+        get
+        {
+            var journeys = FilteredJourneys;
+            if (journeys.Count == 0)
+            {
+                return new List<LineUsageItem>();
+            }
+
+            return journeys
+                .GroupBy(journey => journey.LineName)
+                .OrderByDescending(group => group.Count())
+                .Select(group => new LineUsageItem(group.Key, (int)Math.Round(group.Count() * 100m / journeys.Count)))
+                .ToList();
+        }
+    }
+
+    private List<ChartBucket> ChartBuckets
+    {
+        get
+        {
+            var journeys = FilteredJourneys;
+
+            if (SelectedPeriod == JourneyPeriod.Week)
+            {
+                return Enumerable.Range(0, 7)
+                    .Select(offset =>
+                    {
+                        var date = WeekStart.AddDays(offset);
+                        var dayJourneys = journeys.Where(journey => journey.StartTime.Date == date).ToList();
+                        return new ChartBucket(date.ToString("ddd", PeCulture), dayJourneys.Count, ResolveBucketColor(dayJourneys));
+                    })
+                    .ToList();
+            }
+
+            var buckets = new List<ChartBucket>();
+            var cursor = PeriodStart;
+            var weekNumber = 1;
+
+            while (cursor < PeriodEndExclusive)
+            {
+                var end = cursor.AddDays(7) < PeriodEndExclusive ? cursor.AddDays(7) : PeriodEndExclusive;
+                var weekJourneys = journeys.Where(journey => journey.StartTime >= cursor && journey.StartTime < end).ToList();
+                buckets.Add(new ChartBucket($"Sem {weekNumber}", weekJourneys.Count, ResolveBucketColor(weekJourneys)));
+                cursor = end;
+                weekNumber++;
+            }
+
+            return buckets;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var apiJourneys = await ApiService.GetJourneyHistoryAsync(DemoAccountId);
+        JourneyHistory = apiJourneys.Count > 0
+            ? apiJourneys.Select(MapFromApi).ToList()
+            : BuildFallbackJourneys();
+
+        IsLoading = false;
+    }
+
+    private void SelectPeriod(JourneyPeriod period)
+    {
+        SelectedPeriod = period;
+    }
+
+    private void ToggleMetropolitano()
+    {
+        ShowMetropolitano = !ShowMetropolitano;
+    }
+
+    private void ToggleLinea1()
+    {
+        ShowLinea1 = !ShowLinea1;
+    }
+
+    private bool IsInsideSelectedPeriod(JourneyViewModel journey) =>
+        journey.StartTime >= PeriodStart && journey.StartTime < PeriodEndExclusive;
+
+    private bool IsInsideSelectedLine(JourneyViewModel journey) =>
+        journey.LineName switch
+        {
+            "Metropolitano" => ShowMetropolitano,
+            "Línea 1" => ShowLinea1,
+            _ => true
+        };
+
+    private static JourneyViewModel MapFromApi(Journey journey)
+    {
+        var lineName = ResolveLineName(journey.OriginStationId, journey.DestinationStationId);
+        var isFreeTransfer = journey.FareApplied <= 0;
+        var routeKind = isFreeTransfer ? "Transbordo" : lineName == "Metropolitano" ? "Regular" : "Tren";
+        var endTime = journey.EndTime ?? journey.StartTime.AddMinutes(lineName == "Metropolitano" ? 36 : 24);
+
+        return new JourneyViewModel(
+            journey.JourneyId,
+            journey.OriginStationId,
+            journey.DestinationStationId,
+            lineName,
+            routeKind,
+            journey.FareApplied,
+            journey.StartTime,
+            endTime,
+            isFreeTransfer);
+    }
+
+    private static List<JourneyViewModel> BuildFallbackJourneys()
+    {
+        var today = DateTime.Today;
+        var lastMonth = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
+
+        return new List<JourneyViewModel>
+        {
+            new("journey-demo-001", "Naranjal", "Estación Central", "Metropolitano", "Expreso", 2.70m, today.AddHours(7).AddMinutes(42), today.AddHours(8).AddMinutes(18), false),
+            new("journey-demo-002", "Estación Central", "Atocongo", "Línea 1", "Transbordo", 0m, today.AddHours(8).AddMinutes(23), today.AddHours(8).AddMinutes(48), true),
+            new("journey-demo-003", "Javier Prado", "Comas", "Metropolitano", "Regular", 3.20m, today.AddDays(-1).AddHours(18).AddMinutes(10), today.AddDays(-1).AddHours(19).AddMinutes(2), false),
+            new("journey-demo-004", "San Borja Norte", "Villa El Salvador", "Línea 1", "Tren", 1.50m, today.AddDays(-2).AddHours(7).AddMinutes(5), today.AddDays(-2).AddHours(7).AddMinutes(37), false),
+            new("journey-demo-005", "Matellini", "Angamos", "Metropolitano", "Regular", 2.70m, today.AddDays(-3).AddHours(12).AddMinutes(20), today.AddDays(-3).AddHours(12).AddMinutes(51), false),
+            new("journey-demo-006", "Angamos", "La Cultura", "Línea 1", "Transbordo", 0m, today.AddDays(-3).AddHours(13).AddMinutes(2), today.AddDays(-3).AddHours(13).AddMinutes(15), true),
+            new("journey-demo-007", "Naranjal", "Canaval y Moreyra", "Metropolitano", "Expreso", 3.20m, today.AddDays(-6).AddHours(8).AddMinutes(4), today.AddDays(-6).AddHours(8).AddMinutes(41), false),
+            new("journey-demo-008", "Bayóvar", "Miguel Grau", "Línea 1", "Tren", 1.50m, today.AddDays(-8).AddHours(9).AddMinutes(18), today.AddDays(-8).AddHours(9).AddMinutes(53), false),
+            new("journey-demo-009", "Tomás Valle", "Plaza de Flores", "Metropolitano", "Regular", 2.70m, today.AddDays(-12).AddHours(17).AddMinutes(25), today.AddDays(-12).AddHours(18).AddMinutes(4), false),
+            new("journey-demo-010", "Gamarra", "Cabitos", "Línea 1", "Tren", 1.50m, today.AddDays(-15).AddHours(6).AddMinutes(50), today.AddDays(-15).AddHours(7).AddMinutes(19), false),
+            new("journey-demo-011", "UNI", "Estadio Nacional", "Metropolitano", "Regular", 2.70m, today.AddDays(-21).AddHours(19).AddMinutes(12), today.AddDays(-21).AddHours(19).AddMinutes(45), false),
+            new("journey-demo-012", "Naranjal", "Estación Central", "Metropolitano", "Expreso", 2.70m, lastMonth.AddDays(4).AddHours(7).AddMinutes(35), lastMonth.AddDays(4).AddHours(8).AddMinutes(12), false),
+            new("journey-demo-013", "Estación Central", "La Cultura", "Línea 1", "Transbordo", 0m, lastMonth.AddDays(4).AddHours(8).AddMinutes(18), lastMonth.AddDays(4).AddHours(8).AddMinutes(40), true),
+            new("journey-demo-014", "Villa El Salvador", "Naranjal", "Metropolitano", "Interconexión", 3.20m, lastMonth.AddDays(11).AddHours(18).AddMinutes(6), lastMonth.AddDays(11).AddHours(19).AddMinutes(2), false),
+            new("journey-demo-015", "Atocongo", "Bayóvar", "Línea 1", "Tren", 1.50m, lastMonth.AddDays(18).AddHours(10).AddMinutes(20), lastMonth.AddDays(18).AddHours(11).AddMinutes(5), false),
+            new("journey-demo-016", "Matellini", "Naranjal", "Metropolitano", "Expreso", 3.20m, lastMonth.AddDays(24).AddHours(7).AddMinutes(55), lastMonth.AddDays(24).AddHours(8).AddMinutes(43), false)
+        };
+    }
+
+    private string GetBarStyle(ChartBucket bucket)
+    {
+        var max = Math.Max(1, ChartBuckets.Max(item => item.Count));
+        var height = bucket.Count == 0 ? 8 : 12 + (bucket.Count * 58 / max);
+        var opacity = bucket.Count == 0 ? ".35" : ".9";
+
+        return $"height:{height}px;background:{bucket.Color};opacity:{opacity}";
+    }
+
+    private string FormatJourneyDate(DateTime value)
+    {
+        var daysAgo = (Today - value.Date).Days;
+        var prefix = daysAgo switch
+        {
+            0 => "Hoy",
+            1 => "Ayer",
+            _ => value.ToString("dddd", PeCulture)
+        };
+
+        return $"{prefix} · {value.ToString("d 'de' MMMM yyyy", PeCulture)}";
+    }
+
+    private static string FormatCurrency(decimal amount) =>
+        $"S/ {amount.ToString("0.00", CultureInfo.InvariantCulture)}";
+
+    private static string FormatFare(JourneyViewModel journey) =>
+        journey.IsFreeTransfer ? "S/ 0.00" : $"-{FormatCurrency(journey.Fare)}";
+
+    private static string GetLineColor(string lineName) =>
+        lineName switch
+        {
+            "Metropolitano" => "var(--met)",
+            "Línea 1" => "var(--l1)",
+            _ => "var(--l2)"
+        };
+
+    private static string GetLineTagClass(string lineName) =>
+        lineName switch
+        {
+            "Metropolitano" => "lt-met",
+            "Línea 1" => "lt-l1",
+            _ => "lt-l2"
+        };
+
+    private static string ResolveBucketColor(List<JourneyViewModel> journeys)
+    {
+        var lineName = journeys
+            .GroupBy(journey => journey.LineName)
+            .OrderByDescending(group => group.Count())
+            .Select(group => group.Key)
+            .FirstOrDefault();
+
+        return lineName is null ? "var(--border2)" : GetLineColor(lineName);
+    }
+
+    private static string ResolveLineName(string origin, string destination)
+    {
+        string[] linea1Stations =
+        {
+            "Atocongo", "Bayóvar", "Cabitos", "Gamarra", "La Cultura", "Miguel Grau",
+            "San Borja Norte", "Villa El Salvador"
+        };
+
+        return linea1Stations.Contains(origin) || linea1Stations.Contains(destination)
+            ? "Línea 1"
+            : "Metropolitano";
+    }
+
+    private static DateTime StartOfWeek(DateTime date)
+    {
+        var offset = ((int)date.DayOfWeek + 6) % 7;
+        return date.Date.AddDays(-offset);
+    }
+
+    private enum JourneyPeriod
+    {
+        Week,
+        Month,
+        LastMonth
+    }
+
+    private sealed record PeriodFilter(JourneyPeriod Value, string Label);
+
+    private sealed record ChartBucket(string Label, int Count, string Color);
+
+    private sealed record LineUsageItem(string LineName, int Percentage);
+
+    private sealed record JourneyViewModel(
+        string Id,
+        string Origin,
+        string Destination,
+        string LineName,
+        string RouteKind,
+        decimal Fare,
+        DateTime StartTime,
+        DateTime EndTime,
+        bool IsFreeTransfer)
+    {
+        public int DurationMinutes => Math.Max(1, (int)Math.Round((EndTime - StartTime).TotalMinutes));
+    }
 }

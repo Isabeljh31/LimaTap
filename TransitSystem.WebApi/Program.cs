@@ -8,14 +8,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Lógica de Negocio
+// LÃ³gica de Negocio
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IJourneyService, JourneyService>();
+builder.Services.AddScoped<IJourneyExportService, CsvJourneyExportService>();
 builder.Services.AddScoped<RechargeService>();
 
-// Infraestructura simulada en memoria para la presentación
+// Infraestructura simulada en memoria para la presentaciÃ³n
 builder.Services.AddScoped<IAccountRepository, MockAccountRepository>();
 builder.Services.AddScoped<ICardRepository, MockCardRepository>();
+builder.Services.AddScoped<IJourneyRepository, MockJourneyRepository>();
 builder.Services.AddScoped<IRechargeTransactionRepository, MockRechargeRepository>();
 builder.Services.AddScoped<IPaymentGateway, MockPaymentGateway>();
 

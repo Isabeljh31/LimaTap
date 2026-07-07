@@ -1119,6 +1119,9 @@ body {
 }
 
 .fc {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     padding: 6px 13px;
     border-radius: 20px;
     font-size: 11px;
@@ -1126,6 +1129,7 @@ body {
     cursor: pointer;
     transition: all .15s;
     white-space: nowrap;
+    font-family: var(--sans);
 }
 
     .fc.on {
@@ -1193,6 +1197,28 @@ body {
 
 .st-box.r .st-val {
     color: var(--met)
+}
+
+.journey-alert {
+    background: var(--l1-light);
+    border: 1px solid var(--l1-mid);
+    border-radius: 11px;
+    color: var(--l1-dark);
+    font-size: 12px;
+    font-weight: 600;
+    margin: -8px 0 1rem;
+    padding: 10px 13px
+}
+
+.journey-empty {
+    background: var(--surface);
+    border: 1px dashed var(--border2);
+    border-radius: 13px;
+    color: var(--text3);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 22px;
+    text-align: center
 }
 
 /* Bar chart */
@@ -1275,6 +1301,10 @@ body {
     font-family: var(--mono)
 }
 
+.jc-cost.free {
+    color: var(--l1)
+}
+
 .jc-route {
     display: flex;
     align-items: center;
@@ -1309,7 +1339,8 @@ body {
 .r-st {
     font-size: 12px;
     font-weight: 600;
-    color: var(--text)
+    color: var(--text);
+    min-width: 0
 }
 
 .r-time {
@@ -1321,7 +1352,8 @@ body {
 
 .jc-tags {
     display: flex;
-    gap: 5px
+    gap: 5px;
+    flex-wrap: wrap
 }
 
 /* Sidebar viajes */
@@ -1403,6 +1435,174 @@ body {
     color: var(--text3);
     min-width: 28px;
     text-align: right
+}
+
+/* Exportar viajes */
+.export-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.25rem;
+    align-items: start
+}
+
+.export-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem
+}
+
+.export-options {
+    display: grid;
+    gap: 8px
+}
+
+.export-option {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 13px;
+    text-align: left;
+    transition: all .15s;
+    font-family: var(--sans)
+}
+
+    .export-option:hover {
+        border-color: var(--border2)
+    }
+
+    .export-option.active {
+        background: var(--met-light);
+        border-color: var(--met-mid)
+    }
+
+    .export-option span {
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 700
+    }
+
+    .export-option small {
+        color: var(--text3);
+        font-size: 10.5px;
+        font-weight: 600
+    }
+
+.export-format-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px
+}
+
+.export-format {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: 72px;
+    padding: 12px;
+    text-align: left;
+    font-family: var(--sans)
+}
+
+    .export-format.active {
+        background: var(--l1-light);
+        border-color: var(--l1-mid)
+    }
+
+    .export-format.disabled {
+        cursor: not-allowed;
+        opacity: .55
+    }
+
+    .export-format strong {
+        color: var(--text);
+        font-size: 13px
+    }
+
+    .export-format span {
+        color: var(--text3);
+        font-size: 10.5px;
+        line-height: 1.35
+    }
+
+.export-summary {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    margin-bottom: 1rem
+}
+
+    .export-summary div {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        padding: 12px
+    }
+
+    .export-summary span {
+        color: var(--text3);
+        display: block;
+        font-size: 10.5px;
+        font-weight: 600;
+        margin-bottom: 3px
+    }
+
+    .export-summary strong {
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 18px
+    }
+
+.export-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden
+}
+
+.export-table {
+    border-collapse: collapse;
+    width: 100%
+}
+
+    .export-table th {
+        background: var(--bg3);
+        color: var(--text3);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .7px;
+        padding: 10px 12px;
+        text-align: left;
+        text-transform: uppercase
+    }
+
+    .export-table td {
+        border-top: 1px solid var(--border);
+        color: var(--text2);
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 11px 12px
+    }
+
+.export-actions {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-top: 1rem
+}
+
+.export-download {
+    justify-content: center;
+    min-width: 150px
 }
 
 
@@ -1756,7 +1956,7 @@ body {
         padding: 1rem
     }
 
-    .inicio-grid, .recarga-grid, .viajes-grid, .perfil-grid {
+    .inicio-grid, .recarga-grid, .viajes-grid, .perfil-grid, .export-grid {
         grid-template-columns: 1fr
     }
 
@@ -1771,6 +1971,15 @@ body {
     .ph {
         flex-direction: column;
         gap: 10px
+    }
+
+    .export-actions {
+        align-items: stretch;
+        flex-direction: column
+    }
+
+    .export-download {
+        width: 100%
     }
 }
 
@@ -1790,6 +1999,32 @@ body {
 
     .mini-stats-grid {
         grid-template-columns: 1fr 1fr
+    }
+
+    .jc-route {
+        flex-wrap: wrap;
+        align-items: flex-start
+    }
+
+    .r-line {
+        min-width: 38px
+    }
+
+    .r-time {
+        width: 100%;
+        margin-left: 17px
+    }
+
+    .export-summary, .export-format-grid {
+        grid-template-columns: 1fr
+    }
+
+    .export-table-wrap {
+        overflow-x: auto
+    }
+
+    .export-table {
+        min-width: 560px
     }
 }
 

@@ -1,0 +1,271 @@
+@page "/journeys/export"
+
+@using System.Globalization
+@using TransitSystem.Core.Domain.Entities
+@inject TransitSystem.Frontend.Services.TransitApiService ApiService
+
+<PageTitle>LimaTap · Exportar viajes</PageTitle>
+
+<div class="tab-panel active">
+    <div class="ph">
+        <div>
+            <div class="ph-title">Exportar viajes</div>
+            <div class="ph-sub">Configura el periodo, las líneas y revisa la vista previa antes de descargar</div>
+        </div>
+        <a href="/journeys" class="btn btn-outline" style="text-decoration:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            Volver
+        </a>
+    </div>
+
+    <div class="export-grid">
+        <section class="export-panel">
+            <div class="sec-label">Periodo</div>
+            <div class="export-options">
+                @foreach (var period in PeriodOptions)
+                {
+                    <button type="button"
+                            class="export-option @(SelectedPeriod == period.Value ? "active" : "")"
+                            aria-pressed="@(SelectedPeriod == period.Value ? "true" : "false")"
+                            @onclick="() => SelectedPeriod = period.Value">
+                        <span>@period.Label</span>
+                        <small>@GetPeriodRange(period.Value)</small>
+                    </button>
+                }
+            </div>
+
+            <div class="sec-label" style="margin-top:1rem">Líneas incluidas</div>
+            <div class="filters" style="margin-bottom:0">
+                <button type="button"
+                        class="fc @(IncludeMetropolitano ? "on" : "off")"
+                        aria-pressed="@(IncludeMetropolitano ? "true" : "false")"
+                        @onclick="() => IncludeMetropolitano = !IncludeMetropolitano">
+                    <div class="line-dot" style="background:var(--met)"></div>Metropolitano
+                </button>
+                <button type="button"
+                        class="fc @(IncludeLinea1 ? "fc-l1 on" : "off")"
+                        aria-pressed="@(IncludeLinea1 ? "true" : "false")"
+                        @onclick="() => IncludeLinea1 = !IncludeLinea1">
+                    <div class="line-dot" style="background:var(--l1)"></div>Línea 1
+                </button>
+            </div>
+
+            <div class="sec-label" style="margin-top:1rem">Formato</div>
+            <div class="export-format-grid">
+                <button type="button" class="export-format active">
+                    <strong>CSV</strong>
+                    <span>Compatible con Excel y Google Sheets</span>
+                </button>
+                <button type="button" class="export-format disabled" disabled>
+                    <strong>PDF</strong>
+                    <span>Próximamente</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="export-panel">
+            <div class="sec-label">Vista previa</div>
+
+            @if (IsLoading)
+            {
+                <div class="journey-empty">Preparando vista previa...</div>
+            }
+            else
+            {
+                <div class="export-summary">
+                    <div>
+                        <span>Viajes</span>
+                        <strong>@FilteredJourneys.Count</strong>
+                    </div>
+                    <div>
+                        <span>Gasto</span>
+                        <strong>@FormatCurrency(FilteredJourneys.Sum(journey => journey.FareApplied))</strong>
+                    </div>
+                    <div>
+                        <span>Archivo</span>
+                        <strong>CSV</strong>
+                    </div>
+                </div>
+
+                @if (FilteredJourneys.Count == 0)
+                {
+                    <div class="journey-empty">No hay viajes para los filtros seleccionados.</div>
+                }
+                else
+                {
+                    <div class="export-table-wrap">
+                        <table class="export-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Línea</th>
+                                    <th>Ruta</th>
+                                    <th>Tarifa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var journey in FilteredJourneys.Take(6))
+                                {
+                                    <tr>
+                                        <td>@journey.StartTime.ToString("dd MMM HH:mm", PeCulture)</td>
+                                        <td>@ResolveLineName(journey)</td>
+                                        <td>@journey.OriginStationId → @journey.DestinationStationId</td>
+                                        <td>@FormatCurrency(journey.FareApplied)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <div class="export-actions">
+                    <a class="btn btn-primary export-download"
+                       href="@ExportUrl"
+                       target="_blank"
+                       download="historial-viajes.csv"
+                       style="text-decoration:none">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Descargar CSV
+                    </a>
+                    <div class="vs-sub">Se exportan solo los viajes que coinciden con la configuración actual.</div>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@code {
+    private const string DemoAccountId = "12345";
+    private static readonly CultureInfo PeCulture = CultureInfo.GetCultureInfo("es-PE");
+
+    private readonly PeriodOption[] PeriodOptions =
+    {
+        new(ExportPeriod.Week, "Esta semana"),
+        new(ExportPeriod.Month, "Este mes"),
+        new(ExportPeriod.LastMonth, "Último mes"),
+        new(ExportPeriod.All, "Todo")
+    };
+
+    private ExportPeriod SelectedPeriod = ExportPeriod.Month;
+    private bool IncludeMetropolitano = true;
+    private bool IncludeLinea1 = true;
+    private bool IsLoading = true;
+    private List<Journey> JourneyHistory = new();
+
+    private DateTime Today => DateTime.Today;
+    private DateTime CurrentMonthStart => new(Today.Year, Today.Month, 1);
+    private DateTime WeekStart => StartOfWeek(Today);
+
+    private DateTime? ExportFrom => SelectedPeriod switch
+    {
+        ExportPeriod.Week => WeekStart,
+        ExportPeriod.Month => CurrentMonthStart,
+        ExportPeriod.LastMonth => CurrentMonthStart.AddMonths(-1),
+        _ => null
+    };
+
+    private DateTime? ExportTo => SelectedPeriod switch
+    {
+        ExportPeriod.Week => WeekStart.AddDays(7),
+        ExportPeriod.Month => Today.AddDays(1),
+        ExportPeriod.LastMonth => CurrentMonthStart,
+        _ => null
+    };
+
+    private string ExportUrl => ApiService.GetJourneyExportUrl(
+        DemoAccountId,
+        ExportFrom,
+        ExportTo,
+        IncludeMetropolitano,
+        IncludeLinea1);
+
+    private List<Journey> FilteredJourneys => JourneyHistory
+        .Where(IsInsideSelectedPeriod)
+        .Where(IsIncludedLine)
+        .OrderByDescending(journey => journey.StartTime)
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        JourneyHistory = await ApiService.GetJourneyHistoryAsync(DemoAccountId);
+        IsLoading = false;
+    }
+
+    private bool IsInsideSelectedPeriod(Journey journey)
+    {
+        if (ExportFrom is not null && journey.StartTime < ExportFrom.Value)
+        {
+            return false;
+        }
+
+        if (ExportTo is not null && journey.StartTime >= ExportTo.Value)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsIncludedLine(Journey journey) =>
+        ResolveLineName(journey) switch
+        {
+            "Metropolitano" => IncludeMetropolitano,
+            "Línea 1" => IncludeLinea1,
+            _ => true
+        };
+
+    private string GetPeriodRange(ExportPeriod period)
+    {
+        var from = period switch
+        {
+            ExportPeriod.Week => WeekStart,
+            ExportPeriod.Month => CurrentMonthStart,
+            ExportPeriod.LastMonth => CurrentMonthStart.AddMonths(-1),
+            _ => (DateTime?)null
+        };
+
+        var to = period switch
+        {
+            ExportPeriod.Week => WeekStart.AddDays(6),
+            ExportPeriod.Month => Today,
+            ExportPeriod.LastMonth => CurrentMonthStart.AddDays(-1),
+            _ => (DateTime?)null
+        };
+
+        return from is null || to is null
+            ? "Historial completo"
+            : $"{from.Value.ToString("d MMM", PeCulture)} - {to.Value.ToString("d MMM", PeCulture)}";
+    }
+
+    private static string ResolveLineName(Journey journey)
+    {
+        string[] linea1Stations =
+        {
+            "Atocongo", "Bayóvar", "Cabitos", "Gamarra", "La Cultura", "Miguel Grau",
+            "San Borja Norte", "Villa El Salvador"
+        };
+
+        return linea1Stations.Contains(journey.OriginStationId) || linea1Stations.Contains(journey.DestinationStationId)
+            ? "Línea 1"
+            : "Metropolitano";
+    }
+
+    private static string FormatCurrency(decimal amount) =>
+        $"S/ {amount.ToString("0.00", CultureInfo.InvariantCulture)}";
+
+    private static DateTime StartOfWeek(DateTime date)
+    {
+        var offset = ((int)date.DayOfWeek + 6) % 7;
+        return date.Date.AddDays(-offset);
+    }
+
+    private enum ExportPeriod
+    {
+        Week,
+        Month,
+        LastMonth,
+        All
+    }
+
+    private sealed record PeriodOption(ExportPeriod Value, string Label);
+}
