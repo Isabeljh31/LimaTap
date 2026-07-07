@@ -12,16 +12,11 @@
       <div class="ph-title">Mis viajes</div>
       <div class="ph-sub">@PeriodSummary · @FilteredJourneys.Count viaje(s) encontrados</div>
     </div>
-    <button type="button" class="btn btn-outline" @onclick="ExportHistory">
+    <a class="btn btn-outline" href="/journeys/export" style="text-decoration:none">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Exportar
-    </button>
+    </a>
   </div>
-
-  @if (!string.IsNullOrWhiteSpace(ExportMessage))
-  {
-    <div class="journey-alert">@ExportMessage</div>
-  }
 
   <div class="filters" role="toolbar" aria-label="Filtros del historial">
     @foreach (var filter in PeriodFilters)
@@ -169,7 +164,6 @@
     private bool ShowMetropolitano = true;
     private bool ShowLinea1 = true;
     private bool IsLoading = true;
-    private string? ExportMessage;
     private List<JourneyViewModel> JourneyHistory = new();
 
     private DateTime Today => DateTime.Today;
@@ -315,24 +309,16 @@
     private void SelectPeriod(JourneyPeriod period)
     {
         SelectedPeriod = period;
-        ExportMessage = null;
     }
 
     private void ToggleMetropolitano()
     {
         ShowMetropolitano = !ShowMetropolitano;
-        ExportMessage = null;
     }
 
     private void ToggleLinea1()
     {
         ShowLinea1 = !ShowLinea1;
-        ExportMessage = null;
-    }
-
-    private void ExportHistory()
-    {
-        ExportMessage = $"Exportación preparada: {FilteredJourneys.Count} viaje(s) de {PeriodLabel.ToLower(PeCulture)}.";
     }
 
     private bool IsInsideSelectedPeriod(JourneyViewModel journey) =>

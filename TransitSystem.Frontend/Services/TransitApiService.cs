@@ -83,5 +83,32 @@ namespace TransitSystem.Frontend.Services
                 return new List<Journey>();
             }
         }
+
+        public string GetJourneyExportUrl(
+            string accountId,
+            DateTime? from = null,
+            DateTime? to = null,
+            bool includeMetropolitano = true,
+            bool includeLinea1 = true)
+        {
+            var safeAccountId = Uri.EscapeDataString(accountId);
+            var parameters = new List<string>();
+
+            if (from is not null)
+            {
+                parameters.Add($"from={Uri.EscapeDataString(from.Value.ToString("O"))}");
+            }
+
+            if (to is not null)
+            {
+                parameters.Add($"to={Uri.EscapeDataString(to.Value.ToString("O"))}");
+            }
+
+            parameters.Add($"includeMetropolitano={includeMetropolitano.ToString().ToLowerInvariant()}");
+            parameters.Add($"includeLinea1={includeLinea1.ToString().ToLowerInvariant()}");
+
+            var query = parameters.Count == 0 ? string.Empty : $"?{string.Join("&", parameters)}";
+            return new Uri(_httpClient.BaseAddress!, $"api/JourneyExport/{safeAccountId}{query}").ToString();
+        }
     }
 }

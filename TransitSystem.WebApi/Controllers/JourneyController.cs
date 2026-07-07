@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using TransitSystem.Core.Interfaces;
-using TransitSystem.WebApi.Mocks;
 
 namespace TransitSystem.WebApi.Controllers
 {
@@ -8,7 +7,12 @@ namespace TransitSystem.WebApi.Controllers
     [Route("api/[controller]")]
     public class JourneyController : ControllerBase
     {
-        private readonly IJourneyRepository _journeyRepository = new MockJourneyRepository();
+        private readonly IJourneyRepository _journeyRepository;
+
+        public JourneyController(IJourneyRepository journeyRepository)
+        {
+            _journeyRepository = journeyRepository;
+        }
 
         [HttpGet("{accountId}")]
         public async Task<IActionResult> GetHistory(string accountId)
