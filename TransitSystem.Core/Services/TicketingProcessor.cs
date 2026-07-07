@@ -54,7 +54,7 @@ namespace TransitSystem.Core.Services
 
             if (!paymentSuccessful) return false; 
 
-           
+           // 6. Guardar los cambios en la cuenta
             await _accountRepository.UpdateAsync(account);
 
             // 7. Guardar el log de la transacción
