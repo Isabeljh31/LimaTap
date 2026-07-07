@@ -1,0 +1,213 @@
+@page "/validate-tap"
+@using TransitSystem.Shared.Models
+@inject TransitSystem.Frontend.Services.TransitApiService ApiService
+
+<div class="validate-page">
+    <div class="validate-card">
+        <div class="validate-header">
+            <div class="pill">Validar viaje</div>
+            <h1>Validación por tap</h1>
+            <p>Ingresa los datos del viaje para validar el acceso en la estación.</p>
+        </div>
+
+        <div class="validate-form">
+            <div class="field-group">
+                <label for="token">Token NFC</label>
+                <input id="token" class="field" @bind="request.TokenId" placeholder="Ej: TKN-001" />
+            </div>
+
+            <div class="field-group">
+                <label for="system">Sistema</label>
+                <select id="system" class="field" @bind="request.SystemType">
+                    <option value="Metropolitano">Metropolitano</option>
+                    <option value="Linea1">Línea 1</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="station">Estación</label>
+                <input id="station" class="field" @bind="request.StationId" placeholder="Ej: Estación Central" />
+            </div>
+
+            <button class="validate-btn" @onclick="HandleValidateTap" disabled="@isProcessing">
+                @if (isProcessing)
+                {
+                    <span>Validando...</span>
+                }
+                else
+                {
+                    <span>Validar viaje</span>
+                }
+            </button>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="status @(isSuccess ? "success" : "error")">@message</div>
+        }
+    </div>
+</div>
+
+<style>
+    .validate-page {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .validate-card {
+        width: 100%;
+        max-width: 520px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .validate-header h1 {
+        margin: 10px 0 8px;
+        font-size: 24px;
+        color: var(--text);
+    }
+
+    .validate-header p {
+        margin: 0 0 20px;
+        color: var(--text3);
+        line-height: 1.5;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--l2-dark);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .validate-form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field-group label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text2);
+    }
+
+    .field {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 14px;
+        background: white;
+        color: var(--text);
+    }
+
+    .field:focus {
+        outline: none;
+        border-color: var(--l2-mid);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .validate-btn {
+        margin-top: 6px;
+        border: 0;
+        border-radius: 14px;
+        padding: 13px 16px;
+        background: linear-gradient(135deg, var(--l2), var(--met));
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .validate-btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+    }
+
+    .status {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .status.success {
+        background: rgba(16, 185, 129, 0.12);
+        color: #047857;
+    }
+
+    .status.error {
+        background: rgba(239, 68, 68, 0.12);
+        color: #b91c1c;
+    }
+</style>
+
+@code {
+    private readonly TapRequest request = new();
+    private bool isProcessing;
+    private string message = string.Empty;
+    private bool isSuccess;
+
+    private async Task HandleValidateTap()
+    {
+        isProcessing = true;
+        message = string.Empty;
+        isSuccess = false;
+
+        try
+        {
+            var response = await ApiService.ValidateTapAsync(request);
+
+            if (response == null)
+            {
+                isSuccess = false;
+                message = "El servidor no devolvió una respuesta válida.";
+                return;
+            }
+
+            isSuccess = response.Success;
+            message = response.Message ?? "Operación completada.";
+
+            if (isSuccess)
+            {
+                request.TokenId = string.Empty;
+                request.SystemType = string.Empty;
+                request.StationId = string.Empty;
+                Console.WriteLine($"Validación realizada correctamente a las {DateTime.Now}");
+            }
+            else
+            {
+                Console.WriteLine($"Error de validación: {message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = $"No se pudo completar la validación: {ex.Message}";
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+}
