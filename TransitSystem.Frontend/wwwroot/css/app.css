@@ -1792,3 +1792,267 @@ body {
         grid-template-columns: 1fr 1fr
     }
 }
+
+/* MÓDULO DE ATENCIÓN
+ */
+
+
+.limatap-container {
+    max-width: 750px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.limatap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+/* ─── Header ─── */
+.limatap-card-header {
+    background: linear-gradient(135deg, var(--met) 0%, var(--met-dark) 100%);
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+    /* el svg viene suelto en el markup original: lo envolvemos visualmente con un "chip" */
+    .limatap-card-header svg {
+        width: 34px;
+        height: 34px;
+        padding: 8px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, .16);
+        border: 1px solid rgba(255, 255, 255, .25);
+        flex-shrink: 0;
+        box-sizing: border-box;
+    }
+
+    .limatap-card-header h5 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: -.2px;
+    }
+
+.limatap-card-body {
+    padding: 1.75rem 2rem 2rem;
+}
+
+.limatap-subtitle {
+    color: var(--text3);
+    font-size: 0.9rem;
+    margin-bottom: 1.75rem;
+    line-height: 1.55;
+}
+
+/* ─── Formulario ─── */
+.limatap-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.limatap-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.limatap-input,
+.limatap-select,
+.limatap-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.88rem;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--sans);
+    transition: border-color .15s, box-shadow .15s, background-color .15s;
+}
+
+    .limatap-input:focus,
+    .limatap-select:focus,
+    .limatap-textarea:focus {
+        outline: none;
+        border-color: var(--met);
+        background: var(--bg2);
+        box-shadow: 0 0 0 3px rgba(200, 16, 46, .08);
+    }
+
+.limatap-textarea {
+    resize: vertical;
+    min-height: 84px;
+}
+
+/* Íconos dentro de los 2 primeros inputs (Nº Tarjeta, Estación), vía background-image */
+.limatap-card-body > .limatap-form-group:nth-child(1) .limatap-input,
+.limatap-card-body > .limatap-form-group:nth-child(2) .limatap-input {
+    padding-left: 2.4rem;
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 15px;
+}
+
+.limatap-card-body > .limatap-form-group:nth-child(1) .limatap-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239198B0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='1' y='4' width='22' height='16' rx='2'/%3E%3Cline x1='1' y1='10' x2='23' y2='10'/%3E%3C/svg%3E");
+}
+
+.limatap-card-body > .limatap-form-group:nth-child(2) .limatap-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239198B0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E");
+}
+
+/* Flecha personalizada del <select>, sin envoltorio extra */
+.limatap-select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 2.4rem;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 13px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239198B0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
+/* ─── Botón ─── */
+.btn-limatap-submit {
+    width: 100%;
+    padding: 0.9rem;
+    background: var(--met);
+    border: none;
+    border-radius: 11px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    font-family: var(--sans);
+    letter-spacing: .2px;
+    transition: background .2s, transform .15s, box-shadow .2s;
+}
+
+    .btn-limatap-submit:hover {
+        background: var(--met-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 22px rgba(200, 16, 46, .28);
+    }
+
+    .btn-limatap-submit:active {
+        transform: scale(.98);
+    }
+
+/* ─── Alerta ─── */
+.limatap-alert {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    background: var(--l1-light);
+    border: 1px solid var(--l1-mid);
+    color: var(--l1-dark);
+    animation: limatap-fade-in .25s ease;
+}
+
+@keyframes limatap-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ─── Historial ─── */
+.limatap-divider {
+    border: 0;
+    border-top: 1px dashed var(--border);
+    margin: 2rem 0 1.5rem;
+}
+
+.limatap-history-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.limatap-table-wrapper {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.limatap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    text-align: left;
+    background: var(--surface);
+}
+
+    .limatap-table th {
+        background: var(--bg3);
+        color: var(--text2);
+        padding: 0.7rem 1rem;
+        font-weight: 700;
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .limatap-table td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text2);
+    }
+
+    .limatap-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .limatap-table tbody tr:hover {
+        background: var(--surface2);
+    }
+
+    /* Solución para las etiquetas de estado */
+    .limatap-table td span[style] {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 11px !important;
+        background-color: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+/* Responsive */
+@media (max-width: 700px) {
+    .limatap-card-body {
+        padding: 1.25rem 1.25rem 1.5rem;
+    }
+
+    .limatap-table {
+        font-size: 11.5px;
+    }
+
+        .limatap-table th,
+        .limatap-table td {
+            padding: 0.6rem 0.6rem;
+        }
+}

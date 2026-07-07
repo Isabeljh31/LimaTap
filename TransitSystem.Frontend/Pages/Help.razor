@@ -2,45 +2,82 @@
 @using TransitSystem.Shared.Models
 @inject HttpClient Http
 
-<div class="container mt-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-danger text-white d-flex align-items-center">
-            <h5 class="mb-0"><i class="oi oi-warning me-2"></i> Central de Atención y Fricciones - LimaTap</h5>
+
+<div class="limatap-container">
+    <div class="limatap-card">
+        <div class="limatap-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+            <h5>Central de Atención y Fricciones - LimaTap</h5>
         </div>
-        <div class="card-body bg-light">
-            <p class="text-muted">¿Tuviste algún inconveniente en las estaciones del Metropolitano o Línea 1? Reporta tu caso de inmediato para soporte técnico.</p>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Número de Tarjeta LimaTap</label>
-                <input type="text" class="form-control" @bind="issue.CardNumber" placeholder="Ej. MET-987654" />
+        <div class="limatap-card-body">
+            <p class="limatap-subtitle">¿Tuviste algún inconveniente en las estaciones del Metropolitano o Línea 1? Reporta tu caso de inmediato para soporte técnico.</p>
+
+            <div class="limatap-form-group">
+                <label class="limatap-label">Número de Tarjeta LimaTap</label>
+                <input type="text" class="limatap-input" @bind="issue.CardNumber" placeholder="Ej. MET-987654" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Estación del Incidente</label>
-                <input type="text" class="form-control" @bind="issue.StationName" placeholder="Ej. Estación Central / Estación Angamos" />
+            <div class="limatap-form-group">
+                <label class="limatap-label">Estación del Incidente</label>
+                <input type="text" class="limatap-input" @bind="issue.StationName" placeholder="Ej. Estación Central / Estación Angamos" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Servicio de Transporte</label>
-                <select class="form-select" @bind="issue.SystemType">
+            <div class="limatap-form-group">
+                <label class="limatap-label">Servicio de Transporte</label>
+                <select class="limatap-select" @bind="issue.SystemType">
                     <option value="Metropolitano">Metropolitano</option>
                     <option value="Linea 1">Línea 1 (Metro de Lima)</option>
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Detalle de la Fricción o Reclamo</label>
-                <textarea class="form-control" @bind="issue.Description" rows="3" placeholder="Describa brevemente el problema (ej: torniquete no leyó saldo, máquina de recarga falló)..."></textarea>
+            <div class="limatap-form-group">
+                <label class="limatap-label">Detalle de la Fricción o Reclamo</label>
+                <textarea class="limatap-textarea" @bind="issue.Description" rows="3" placeholder="Describa brevemente el problema (ej: torniquete no leyó saldo, máquina de recarga falló)..."></textarea>
             </div>
 
-            <button class="btn btn-danger w-100" @onclick="EnviarReporteUrbano">Enviar Alerta de Soporte</button>
+            <button class="btn-limatap-submit" @onclick="EnviarReporteUrbano">Enviar Alerta de Soporte</button>
 
             @if (!string.IsNullOrEmpty(mensajeAlerta))
             {
-                <div class="alert alert-success mt-3 shadow-sm border-0" role="alert">
-                    <i class="oi oi-check me-1"></i> @mensajeAlerta
+                <div class="limatap-alert" role="alert">
+                    @mensajeAlerta
                 </div>
             }
+
+            <hr class="limatap-divider" />
+
+            <h6 class="limatap-history-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                Mis Reportes Recientes (Simulación Local)
+            </h6>
+
+            <div class="limatap-table-wrapper">
+                <table class="limatap-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Estación</th>
+                            <th>Sistema</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>INC-8A32F</strong></td>
+                            <td>Estación Central</td>
+                            <td>Metropolitano</td>
+                            <td><span style="color: #d97706; font-weight: 600;">En Revisión</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>INC-4B110</strong></td>
+                            <td>Estación Angamos</td>
+                            <td>Línea 1</td>
+                            <td><span style="color: #16a34a; font-weight: 600;">Resuelto</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -63,7 +100,7 @@
             if (response.IsSuccessStatusCode)
             {
                 mensajeAlerta = $"¡Reporte enviado! Se ha generado tu caso. Estado actual: Asignado a Soporte Técnico.";
-                issue = new TransitIssueDto(); // Limpiar formulario
+                issue = new TransitIssueDto();
             }
             else
             {
@@ -72,7 +109,6 @@
         }
         catch (Exception)
         {
-            // Fallback por si la API local no está corriendo en paralelo en Blazor WASM
             mensajeAlerta = "Alerta capturada localmente. El sistema unificado procesará su caso a la brevedad.";
         }
     }
