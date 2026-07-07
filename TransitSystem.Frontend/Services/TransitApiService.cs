@@ -70,17 +70,29 @@ namespace TransitSystem.Frontend.Services
             }
         }
 
-        public async Task<List<Journey>> GetJourneyHistoryAsync(string accountId)
+        public async Task<StationsPageDto?> GetStationsAsync()
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<List<Journey>>($"api/Journey/{accountId}")
-                       ?? new List<Journey>();
+                return await _httpClient.GetFromJsonAsync<StationsPageDto>("api/Stations");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener las estaciones: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<List<Journey>?> GetJourneyHistoryAsync(string accountId)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<List<Journey>>($"api/Journey/{accountId}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al obtener el historial de viajes: {ex.Message}");
-                return new List<Journey>();
+                return null;
             }
         }
 

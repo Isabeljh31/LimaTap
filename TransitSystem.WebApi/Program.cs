@@ -12,6 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<RechargeService>();
+builder.Services.AddScoped<IJourneyExportService, CsvJourneyExportService>();
 
 builder.Services.AddScoped<ITariffStrategy, MetropolitanoTariffStrategy>();
 builder.Services.AddScoped<ITariffStrategy, Linea1TariffStrategy>();
@@ -21,6 +22,7 @@ builder.Services.AddScoped<TicketingProcessor>();
 // Infraestructura simulada en memoria para la presentación
 builder.Services.AddScoped<IAccountRepository, MockAccountRepository>();
 builder.Services.AddScoped<ICardRepository, MockCardRepository>();
+builder.Services.AddScoped<IJourneyRepository, MockJourneyRepository>();
 builder.Services.AddScoped<IRechargeTransactionRepository, MockRechargeRepository>();
 builder.Services.AddScoped<IPaymentGateway, MockPaymentGateway>();
 builder.Services.AddScoped<IValidationLogRepository, MockValidationLogRepository>();

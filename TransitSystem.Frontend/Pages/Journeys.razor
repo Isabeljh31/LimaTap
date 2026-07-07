@@ -299,9 +299,10 @@
     protected override async Task OnInitializedAsync()
     {
         var apiJourneys = await ApiService.GetJourneyHistoryAsync(DemoAccountId);
-        JourneyHistory = apiJourneys.Count > 0
-            ? apiJourneys.Select(MapFromApi).ToList()
-            : BuildFallbackJourneys();
+
+        JourneyHistory = apiJourneys is null
+            ? BuildFallbackJourneys()
+            : apiJourneys.Select(MapFromApi).ToList();
 
         IsLoading = false;
     }

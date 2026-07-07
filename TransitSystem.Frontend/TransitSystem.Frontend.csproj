@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransitSystem.Core\TransitSystem.Core.csproj" />
     <ProjectReference Include="..\TransitSystem.Shared\TransitSystem.Shared.csproj" />
   </ItemGroup>
 
