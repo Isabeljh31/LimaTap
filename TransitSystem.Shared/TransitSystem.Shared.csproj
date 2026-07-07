@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\TransitSystem.Infrastructure\TransitSystem.Infrastructure.csproj" />
-  </ItemGroup>
-
 </Project>
