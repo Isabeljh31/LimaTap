@@ -1793,8 +1793,7 @@ body {
     }
 }
 
-/* 
-   MÓDULO DE ATENCIÓN
+/* MÓDULO DE ATENCIÓN
  */
 
 
@@ -2031,16 +2030,15 @@ body {
         background: var(--surface2);
     }
 
-    /* Convierte el <span style="color:..."> del estado en un pill,
-   reutilizando el color inline que ya trae el markup (currentColor)  */
+    /* Solución para las etiquetas de estado */
     .limatap-table td span[style] {
         display: inline-flex;
         align-items: center;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 10.5px !important;
-        background: color-mix(in srgb, currentColor 12%, white);
-        border: 1px solid color-mix(in srgb, currentColor 35%, white);
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 11px !important;
+        background-color: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
     }
 
 /* Responsive */
